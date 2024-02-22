@@ -97,7 +97,7 @@ for curr_file = 1:length(grp_proc_info_in.src_fname_all)
     try
         curr_file_obj = mff_getObject(com.egi.services.mff.api.MFFResourceType.kMFF_RT_MFFFile, [], full_filepath);
     catch err
-        if strcmp(err.message,'Undefined variable "com" or class "com.egi.services.mff.api.MFFResourceType.kMFF_RT_MFFFile".')
+        if strcmp(err.message,'Undefined variable "com" or class "com.egi.services.mff.api.MFFResourceType.kMFF_RT_MFFFile".') || strcmp(err.message, 'Unable to resolve the name com.egi.services.mff.api.MFFResourceType.kMFF_RT_MFFFile.') %RL edit added or
             javaaddpath(which(grp_proc_info_in.beapp_format_mff_jar_lib));
             addpath(ref_dir);
         end
@@ -191,7 +191,7 @@ for curr_file = 1:length(grp_proc_info_in.src_fname_all)
         end
     end
     
-     file_proc_info = beapp_prepare_to_save_file('format',file_proc_info, grp_proc_info_in,grp_proc_info_in.src_dir{1});
+    file_proc_info = beapp_prepare_to_save_file('format',file_proc_info, grp_proc_info_in,grp_proc_info_in.src_dir{1});
 
     % if segmented files, make data into condition x epoch array containing
     % 3d data arrays, as produces in segmentation modules

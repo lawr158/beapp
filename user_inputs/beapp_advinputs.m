@@ -162,9 +162,6 @@ grp_proc_info.beapp_xlsout_log10_on=1; %toggles on that the log10 should be repo
 % ITPC 
 grp_proc_info.beapp_itpc_xlsout_mx_on=1; % report max ITPC in xls report?
 grp_proc_info.beapp_itpc_xlsout_av_on=1; % report mean ITPC in xls report?
-grp_proc_info.beapp_itpc_params.set_freq_range=1; %default [minfreq 50], minfreq being determined by the number of data points, cycles and sampling frequency.
-grp_proc_info.beapp_itpc_params.min_freq=4; %minimum frequency limit 
-grp_proc_info.beapp_itpc_params.max_freq=55; %maximum frequency limit
 grp_proc_info.beapp_itpc_params.use_common_baseline=1;
 grp_proc_info.beapp_itpc_params.common_baseline_idx=1;
 
