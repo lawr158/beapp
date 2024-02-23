@@ -134,6 +134,7 @@ grp_proc_info.src_linenoise = 60; % def = 60. for the notch filter, HAPPE,cleanl
 grp_proc_info.src_unique_nets = {''}; % def ={''} If not running HAPP-E with multiple nets, optional for speed. Required for more than one net if running HAPP-E
 grp_proc_info.epoch_inds_to_process = []; % def = []. ex [1], [3,4]Index of desired epochs to analyze (for ex. if resting is always in the first epoch, for baseline analysis = [1]);
 grp_proc_info.src_eeg_vname = {'EEG_Segment1','Category_1_Segment1','Category_1','EEGSegment1','CA61_011419_L0A'}; %possible variable name of the EEG data EEG_Segment1
+grp_proc_info.src_keep_date_time = 0; % def = 0. 0 = date and time from mff file is not extracted. 1 = date and time from mff file is extracted and saved in file_proc_info
 
 %Formatting specifications: Events
 %Formatting specifications: Event Offsets
