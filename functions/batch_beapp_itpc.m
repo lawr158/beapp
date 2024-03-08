@@ -63,12 +63,14 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
             disp([strcat('File',num2str(curr_file))])            
             for curr_condition = 1:size(eeg_w,1)
   
-                if ~isempty(grp_proc_info_in.win_select_n_trials)
+                if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edited select n trials functionality
                     if size(eeg_w{curr_condition,1},3)>= grp_proc_info_in.win_select_n_trials
-                        
-                        % only keep n trials
-                        inds_to_select = sort(randperm(size(eeg_w{curr_condition,1},3),grp_proc_info_in.win_select_n_trials));
-                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,inds_to_select);
+                        if isempty(file_proc_info.selected_segs{curr_condition,1}) %RL edit
+                            % only keep n trials
+                            file_proc_info.selected_segs{curr_condition,1} = sort(randperm(size(eeg_w{curr_condition,1},3),grp_proc_info_in.win_select_n_trials));
+                        end
+                        inds_to_select = file_proc_info.selected_segs{curr_condition,1}; %RL edit
+                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,inds_to_select); %RL edit
                     else
                         % if not enough trials in this condition
                         disp(['BEAPP file: ' file_proc_info.beapp_fname{1} ' condition ' file_proc_info.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
