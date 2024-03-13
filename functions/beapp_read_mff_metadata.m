@@ -62,7 +62,7 @@ file_proc_info.src_mff_version = recording_info_obj.getMFFVersion;
 file_proc_info.src_present_mff_version = recording_info_obj.getMFFVersionPresent;% unclear if this is actually important or different
 file_proc_info.src_amp_type = char(recording_info_obj.getAmpFirmwareVersion());% amp firmware version
 file_proc_info.src_amp_serial = char(recording_info_obj.getAmpSerialNumber());
-if grp_proc_info.src_keep_date_time %RL added if statement
+if grp_proc_info_in.src_keep_date_time %RL added if statement
     file_proc_info.src_record_start_day = tmp_rec_time{1};
     file_proc_info.src_record_start_time = tmp_rec_time{2};
 end

@@ -163,6 +163,7 @@ grp_proc_info.seg_info_mff_src_dir = {''}; % for almost all users should be empt
 grp_proc_info.beapp_fname_all={''}; %list of beapp file names, set during get_beapp_srcflist
 grp_proc_info.beapp_run_per_file = 0;
 grp_proc_info.beapp_file_idx = 1;
+grp_proc_info.src_save_date_time = 0;
 
 %% general user setting defaults
 grp_proc_info.beapp_rmv_bad_chan_on=0; %flag that removes channels that prepp/HAPPE identifies as bad, replace with NaNs

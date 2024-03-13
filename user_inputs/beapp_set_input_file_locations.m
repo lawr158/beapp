@@ -35,7 +35,7 @@
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % set location for beapp to load user inputs and advanced inputs
-grp_proc_info.beapp_alt_user_input_location = {''}; % def = {''}, which will use beapp_userinputs.m 
+grp_proc_info.beapp_alt_user_input_location = {'Z:\beapp_testing\beapp_tutorial_userinputs.m'}; % def = {''}, which will use beapp_userinputs.m 
 grp_proc_info.beapp_alt_adv_user_input_location = {''}; % def = {''}, which will use beapp_advinputs.m
 
 % set location for beapp to load mat, mff, or rerun file info tables

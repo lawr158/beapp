@@ -254,14 +254,14 @@ for curr_file = 1:length(grp_proc_info_in.beapp_fname_all)
         file_proc_info.evt_conditions_being_analyzed.Num_Segs_Post_Rej(cond_inds_table_all)= cellfun(@ (x) size(x,3),eeg_w(cond_inds_values_all));
         
         %% (added 2/19)
-        if ~isempty(grp_proc_info_in.win_select_n_trials)
-            if size(eeg_w{curr_condition,1},3)>= grp_proc_info_in.win_select_n_trials
-                for curr_condition = 1:size(eeg_w,1)
+        if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edit
+            for curr_condition = 1:size(eeg_w,1)
+                if size(eeg_w{curr_condition,1},3) >= grp_proc_info_in.win_select_n_trials
                     inds_to_select = sort(randperm(size(eeg_w{curr_condition,1},3),grp_proc_info_in.win_select_n_trials));
                     file_proc_info.selected_segs{curr_condition,1} = inds_to_select;
+                else 
+                    file_proc_info.selected_segs{curr_condition,1} = [];
                 end
-            else 
-                file_proc_info.selected_segs{curr_condition,1} = [];
             end
         end
         %%

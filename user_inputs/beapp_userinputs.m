@@ -133,7 +133,6 @@ grp_proc_info.src_linenoise = 60; % def = 60. for the notch filter, HAPPE,cleanl
 grp_proc_info.src_unique_nets = {''}; % def ={''} If not running HAPP-E with multiple nets, optional for speed. Required for more than one net if running HAPP-E
 grp_proc_info.epoch_inds_to_process = []; % def = []. ex [1], [3,4]Index of desired epochs to analyze (for ex. if resting is always in the first epoch, for baseline analysis = [1]);
 grp_proc_info.src_eeg_vname = {'EEG_Segment1','Category_1_Segment1','Category_1','EEGSegment1','CA61_011419_L0A'}; %possible variable name of the EEG data EEG_Segment1
-grp_proc_info.src_keep_date_time = 0; % def = 0. 0 = date and time from mff file is not extracted. 1 = date and time from mff file is extracted and saved in file_proc_info
 
 %Formatting specifications: Events
 %Formatting specifications: Event Offsets
@@ -267,12 +266,10 @@ grp_proc_info.beapp_toggle_mods{'psd','Module_Xls_Out_On'} = 0; %flags the expor
 %for event-related data only
 grp_proc_info.psd_baseline_normalize = 0; %0 to not normalize, 1 to normalize using decibel conversion; 2 to normalize with percent change 
 
-% ITPC SPECIFICATIONS
+% ITPC/ERSP SPECIFICATIONS
 % see newtimef in EEGLAB for more details on these inputs
 grp_proc_info.beapp_itpc_params.win_size = 0.128; %CURRENTLY NOT USED; the win_size (in seconds) to calculate ERSP and ITPC from the ERPs of the composed dataset (e.g. should result in a number of samples an integer and divide trials equaly ex: 10)
 grp_proc_info.beapp_itpc_params.baseline_norm = 1;
-grp_proc_info.beapp_itpc_params.use_common_baseline = 1;
-grp_proc_info.beapp_itpc_params.common_baseline_idx = 1;
 grp_proc_info.beapp_itpc_params.set_freq_range = 0; %default 0 = off, 1 = on uses min_freq and max_freq for frequent limits, minfreq is determined by the number of data points, cycles and sampling frequency.
 grp_proc_info.beapp_itpc_params.min_freq = 2; % def = 2; minimum frequency limit 
 grp_proc_info.beapp_itpc_params.max_freq = 50; % def = 50; maximum frequency limit
@@ -315,5 +312,5 @@ grp_proc_info.pac_chans_to_analyze = []; %list channels to analyze if only some 
 
 %BYCYCLE SPECIFICATIONS
 grp_proc_info.bycycle_freq_bands = [6,8;8,10;12,14]; %Ex: 6,8;8,10. Enter minimum, maximum frequency for each range, and separate ranges using a semicolon.
-grp_proc_info.bycycle_gen_reports = true;
-grp_proc_info.bycycle_save_reports = true;
+grp_proc_info.bycycle_gen_reports = 1;
+grp_proc_info.bycycle_save_reports = 1;

@@ -35,97 +35,105 @@
 function grp_proc_info_in =batch_beapp_psd(grp_proc_info_in)
 
 src_dir = find_input_dir('psd',grp_proc_info_in.beapp_toggle_mods);
-save_warn_as_error= warning('error', 'MATLAB:save:sizeTooBigForMATFile');
+save_warn_as_error = warning('error', 'MATLAB:save:sizeTooBigForMATFile');
 report_initialized = 0;
 
-nstats =  grp_proc_info_in.beapp_xlsout_av_on +grp_proc_info_in.beapp_xlsout_sd_on+ grp_proc_info_in.beapp_xlsout_med_on;
-ndtyps =  grp_proc_info_in.beapp_xlsout_raw_on + grp_proc_info_in.beapp_xlsout_norm_on;
-ntransfs = grp_proc_info_in.beapp_xlsout_log_on+grp_proc_info_in.beapp_xlsout_log10_on+1;
-ntabs=nstats*ndtyps*ntransfs;
+nstats = grp_proc_info_in.beapp_xlsout_av_on + grp_proc_info_in.beapp_xlsout_sd_on + grp_proc_info_in.beapp_xlsout_med_on;
+ndtyps = grp_proc_info_in.beapp_xlsout_raw_on + grp_proc_info_in.beapp_xlsout_norm_on;
+ntransfs = grp_proc_info_in.beapp_xlsout_log_on + grp_proc_info_in.beapp_xlsout_log10_on+1;
+ntabs = nstats*ndtyps*ntransfs;
 
- for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
+for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
     
     cd(src_dir{1});
     
-    if exist(strcat(src_dir{1},filesep,grp_proc_info_in.beapp_fname_all{curr_file}),'file')
+    if exist(grp_proc_info_in.beapp_fname_all{curr_file},'file')
         load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
+
         tic;
-        
-        % if event tagged data or pre-segmented data
-        if grp_proc_info_in.src_data_type ==2 || grp_proc_info_in.src_format_typ ==3
-            analysis_win_start = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_start .* file_proc_info.beapp_srate));
-            analysis_win_end = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_end .* file_proc_info.beapp_srate))-1;
+
+        if exist('eeg_w','var')
             
-            if ~(grp_proc_info_in.psd_baseline_normalize == 0)  && grp_proc_info_in.src_data_type == 2           
-                baseline_win_start = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_trial_baseline_win_start .* file_proc_info.beapp_srate));
-                baseline_win_end = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_trial_baseline_win_end .* file_proc_info.beapp_srate))-1;
-            end
-            % may be negative if analyzing window after event
-            file_proc_info.evt_seg_win_evt_ind = file_proc_info.evt_seg_win_evt_ind-(analysis_win_start-1);
-        end
-        
-        % collect file information for output report if user selected
-        if grp_proc_info_in.beapp_toggle_mods{'psd','Module_Xls_Out_On'}
-            if ~report_initialized
-                [report_info,all_condition_labels,all_obsv_sizes,psd_report_values] = beapp_init_generic_analysis_report (grp_proc_info_in.beapp_fname_all,...
-                    file_proc_info.grp_wide_possible_cond_names_at_segmentation,grp_proc_info_in.largest_nchan,(length(grp_proc_info_in.bw_name)+1),ntabs);
-                report_initialized = 1;
-            end
-            
-            [report_info,all_condition_labels,all_obsv_sizes] = beapp_add_row_generic_analysis_report(report_info,...
-                all_condition_labels,all_obsv_sizes,curr_file,file_proc_info,eeg_w);
-        end
-        
-        % calculate PSD using user selected window for each condition set
-        for curr_condition = 1:size(eeg_w,1)
-            
-            if ~isempty(eeg_w{curr_condition,1})
+            curr_eeg = eeg_w;
+            file_proc_info_in = file_proc_info;
+
+            % if event tagged data or pre-segmented data
+            if grp_proc_info_in.src_data_type ==2 || grp_proc_info_in.src_format_typ ==3
+                analysis_win_start = file_proc_info_in.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_start .* file_proc_info_in.beapp_srate));
+                analysis_win_end = file_proc_info_in.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_end .* file_proc_info_in.beapp_srate))-1;
                 
-                % analyze desired part of segment for event related data
-                if grp_proc_info_in.src_data_type ==2
-                    try
-                        if ~(grp_proc_info_in.psd_baseline_normalize == 0)
-                            eeg_w_baseline = eeg_w{curr_condition,1}(:,baseline_win_start:baseline_win_end,:); 
+                if ~(grp_proc_info_in.psd_baseline_normalize == 0)  && grp_proc_info_in.src_data_type == 2           
+                    baseline_win_start = file_proc_info_in.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_trial_baseline_win_start .* file_proc_info_in.beapp_srate));
+                    baseline_win_end = file_proc_info_in.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_trial_baseline_win_end .* file_proc_info_in.beapp_srate))-1;
+                end
+            end
+            
+            % collect file information for output report if user selected
+            if grp_proc_info_in.beapp_toggle_mods{'psd','Module_Xls_Out_On'}
+                if ~report_initialized
+                    [report_info,all_condition_labels,all_obsv_sizes,psd_report_values] = beapp_init_generic_analysis_report (grp_proc_info_in.beapp_fname_all,...
+                        file_proc_info_in.grp_wide_possible_cond_names_at_segmentation,grp_proc_info_in.largest_nchan,(length(grp_proc_info_in.bw_name)+1),ntabs);
+                    report_initialized = 1;
+                end
+                
+                [report_info,all_condition_labels,all_obsv_sizes] = beapp_add_row_generic_analysis_report(report_info,...
+                    all_condition_labels,all_obsv_sizes,curr_file,file_proc_info_in,curr_eeg);
+            end
+            
+            % calculate PSD using user selected window for each condition set
+            for curr_condition = 1:size(curr_eeg,1)
+                
+                if ~isempty(curr_eeg{curr_condition,1})
+                    
+                    curr_cond_eeg = curr_eeg{curr_condition,1};
+
+                    if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edited select n trials functionality
+                       if size(curr_cond_eeg,3) >= grp_proc_info_in.win_select_n_trials
+                           if ~isfield(file_proc_info_in,'selected_segs') || size(file_proc_info_in.selected_segs,1) < curr_condition %RL edit
+                               % only keep n trials
+                               file_proc_info.selected_segs{curr_condition,1} = sort(randperm(size(curr_cond_eeg,3),grp_proc_info_in.win_select_n_trials));
+                               file_proc_info_in.selected_segs{curr_condition,1} = sort(randperm(size(curr_cond_eeg,3),grp_proc_info_in.win_select_n_trials));
+                               save(file_proc_info_in.beapp_fname{1}, 'file_proc_info', 'eeg_w')
+                           end
+                           inds_to_select = file_proc_info_in.selected_segs{curr_condition,1}; %RL edit
+                           curr_cond_eeg = curr_cond_eeg(:,:,inds_to_select); %RL edit
+                       else
+                           % if not enough trials in this condition
+                           disp(['BEAPP file: ' file_proc_info_in.beapp_fname{1} ' condition ' file_proc_info_in.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
+                           eeg_itc{curr_condition,1} = [];
+                           % go to next condition in the for loop
+                           continue;
+                       end
+                    end
+    
+                    % analyze desired part of segment for event related data
+                    if grp_proc_info_in.src_data_type ==2
+                        try
+                            if ~(grp_proc_info_in.psd_baseline_normalize == 0)
+                                eeg_w_baseline = curr_cond_eeg(:,baseline_win_start:baseline_win_end,:); 
+                            end
+                            curr_cond_eeg = curr_cond_eeg(:,analysis_win_start: analysis_win_end,:); 
+                            
+                        catch err
+                            if strcmp(err.identifier,'MATLAB:badsubscript')
+                                error('BEAPP: analysis segment boundary selected falls outside boundaries used to segment data. Change inputs or re-segment');
+                            end
                         end
-                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,analysis_win_start: analysis_win_end,:); 
+                    end
+                    
+                    [eeg_wfp{curr_condition,1}, eeg_wf{curr_condition,1},f{curr_condition,1}] = calc_psd_of_win_typ(grp_proc_info_in.psd_win_typ,...
+                        curr_cond_eeg,file_proc_info_in.beapp_srate,grp_proc_info_in.psd_pmtm_alpha,grp_proc_info_in.psd_nfft);
+                    %if normalizing with baseline: calculate psd for baseline, use
+                    %it to normalize
+                    if ~(grp_proc_info_in.psd_baseline_normalize == 0) && grp_proc_info_in.src_data_type == 2
+                        [eeg_wfp_baseline, eeg_wf_baseline,f_baseline] = calc_psd_of_win_typ(grp_proc_info_in.psd_win_typ,...
+                                                                            eeg_w_baseline,file_proc_info_in.beapp_srate,grp_proc_info_in.psd_pmtm_alpha,grp_proc_info_in.psd_nfft);
                         
-                    catch err
-                        if strcmp(err.identifier,'MATLAB:badsubscript')
-                            error('BEAPP: analysis segment boundary selected falls outside boundaries used to segment data. Change inputs or re-segment');
-                        end
-                    end
-                end
-                
-                if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edited select n trials functionality
-                    if size(eeg_w{curr_condition,1},3)>= grp_proc_info_in.win_select_n_trials
-                        if isempty(file_proc_info.selected_segs{curr_condition,1}) %RL edit
-                            % only keep n trials
-                            file_proc_info.selected_segs{curr_condition,1} = sort(randperm(size(eeg_w{curr_condition,1},3),grp_proc_info_in.win_select_n_trials));
-                        end
-                        inds_to_select = file_proc_info.selected_segs{curr_condition,1}; %RL edit
-                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,inds_to_select); %RL edit
-                    else
-                        % if not enough trials in this condition
-                        disp(['BEAPP file: ' file_proc_info.beapp_fname{1} ' condition ' file_proc_info.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
-                        eeg_itc{curr_condition,1} = [];
-                        % go to next condition in the for loop
-                        continue;
-                    end
-                end
-                
-                [eeg_wfp{curr_condition,1}, eeg_wf{curr_condition,1},f{curr_condition,1}] = calc_psd_of_win_typ(grp_proc_info_in.psd_win_typ,...
-                    eeg_w{curr_condition,1},file_proc_info.beapp_srate,grp_proc_info_in.psd_pmtm_alpha,grp_proc_info_in.psd_nfft);
-                %if normalizing with baseline: calculate psd for baseline, use
-                %it to normalize
-                if ~(grp_proc_info_in.psd_baseline_normalize == 0)  && grp_proc_info_in.src_data_type == 2
-                 [eeg_wfp_baseline, eeg_wf_baseline,f_baseline] = calc_psd_of_win_typ(grp_proc_info_in.psd_win_typ,...
-                   eeg_w_baseline,file_proc_info.beapp_srate,grp_proc_info_in.psd_pmtm_alpha,grp_proc_info_in.psd_nfft);
-                  
-                   %downsample signal psd if baseline has fewer frequencies
-                   f_baseline = f_baseline';
-                   f{curr_condition} = f{curr_condition}';
-                      if size(f_baseline,2) < size(f{curr_condition,1},2) 
-                          freqs2delete = [];
+                        %downsample signal psd if baseline has fewer frequencies
+                        f_baseline = f_baseline';
+                        f{curr_condition} = f{curr_condition}';
+                        if size(f_baseline,2) < size(f{curr_condition,1},2) 
+                            freqs2delete = [];
                             for freq = 1:size(f{curr_condition,1},2)
                                 %if baseline does not have given frequency,
                                 %delete from signal
@@ -136,10 +144,10 @@ ntabs=nstats*ndtyps*ntransfs;
                             eeg_wfp{curr_condition,1}(:,freqs2delete,:) = [];
                             eeg_wf{curr_condition,1}(:,freqs2delete,:) = [];
                             f{curr_condition,1}(:,freqs2delete) = [];
-                            
-                    %downsample baseline psd if signal has fewer frequencies
-                      elseif size(f_baseline,2) > size(f{curr_condition,1},2)
-                          freqs2delete = [];
+                                
+                        %downsample baseline psd if signal has fewer frequencies
+                        elseif size(f_baseline,2) > size(f{curr_condition,1},2)
+                            freqs2delete = [];
                             for freq = 1:size(f_baseline,2)
                                 %if baseline does not have given frequency,
                                 %delete from signal
@@ -150,51 +158,55 @@ ntabs=nstats*ndtyps*ntransfs;
                             eeg_wfp_baseline(:,freqs2delete,:) = [];
                             eeg_wf_baseline(:,freqs2delete,:) = [];
                             f_baseline(:,freqs2delete) = [];
-                      end
-                      if grp_proc_info_in.psd_baseline_normalize == 1 %decibel conversion 
+                        end
+                        if grp_proc_info_in.psd_baseline_normalize == 1 %decibel conversion 
                             eeg_wfp{curr_condition,1} = 10*log10(eeg_wfp{curr_condition,1} ./ eeg_wfp_baseline);
-                      elseif grp_proc_info_in.psd_baseline_normalize ==  2 %percent change
+                        elseif grp_proc_info_in.psd_baseline_normalize ==  2 %percent change
                             eeg_wfp{curr_condition,1} = 100*((eeg_wfp{curr_condition,1} - eeg_wfp_baseline) ./ eeg_wfp_baseline);
-                      end
-                  
-                end
-                % interpolate if flagged on by user
-                if grp_proc_info_in.psd_interp_typ>1
-                    [eeg_wf{curr_condition,1},interp_f{curr_condition,1}] = permute_and_interp_eeg(eeg_wf{curr_condition,1},...
-                        f{curr_condition,1},grp_proc_info_in.psd_interp_typ_name{grp_proc_info_in.psd_interp_typ});
+                        end
+                        
+                    end
+                    % interpolate if flagged on by user
+                    if grp_proc_info_in.psd_interp_typ>1
+                        [eeg_wf{curr_condition,1},interp_f{curr_condition,1}] = permute_and_interp_eeg(eeg_wf{curr_condition,1},...
+                            f{curr_condition,1},grp_proc_info_in.psd_interp_typ_name{grp_proc_info_in.psd_interp_typ});
+                        
+                        [eeg_wfp{curr_condition,1},interp_f{curr_condition,1}] = permute_and_interp_eeg(eeg_wfp{curr_condition,1},...
+                            f{curr_condition,1},grp_proc_info_in.psd_interp_typ_name{grp_proc_info_in.psd_interp_typ});
+                        f{curr_condition,1}= interp_f{curr_condition,1};
+                    end
                     
-                    [eeg_wfp{curr_condition,1},interp_f{curr_condition,1}] = permute_and_interp_eeg(eeg_wfp{curr_condition,1},...
-                        f{curr_condition,1},grp_proc_info_in.psd_interp_typ_name{grp_proc_info_in.psd_interp_typ});
-                    f{curr_condition,1}= interp_f{curr_condition,1};
+                else
+                    eeg_wf{curr_condition,1}=[];
+                    eeg_wfp{curr_condition,1} = [];
+                    f {curr_condition,1}= [];
                 end
                 
-            else
-                eeg_wf{curr_condition,1}=[];
-                eeg_wfp{curr_condition,1} = [];
-                f {curr_condition,1}= [];
-            end
-            
-            % calculate output statistics selected by user
-            if ~isempty(eeg_wfp{curr_condition,1}) && grp_proc_info_in.beapp_toggle_mods{'psd','Module_Xls_Out_On'}
-                psd_report_values{curr_condition,1}(curr_file,:,:) = beapp_calc_psd_output(grp_proc_info_in,file_proc_info,eeg_wfp{curr_condition,1},f{curr_condition,1},grp_proc_info_in.largest_nchan);
-            end
-        end
-        
-        if ~all(cellfun('isempty',eeg_wfp))
-             file_proc_info = beapp_prepare_to_save_file('psd',file_proc_info, grp_proc_info_in, src_dir{1});
-            try
-                save(file_proc_info.beapp_fname{1},'eeg_wfp','f','file_proc_info');
-            catch ME
-                if  (strcmp(ME.identifier,'MATLAB:save:sizeTooBigForMATFile'))
-                    disp([file_proc_info.beapp_fname{1} ': file is too large to save with v6, saving using MAT-file v7.3 (may take longer)']);
-                    save(file_proc_info.beapp_fname{1},'eeg_wfp','f','file_proc_info','-v7.3');
+                % calculate output statistics selected by user
+                if ~isempty(eeg_wfp{curr_condition,1}) && grp_proc_info_in.beapp_toggle_mods{'psd','Module_Xls_Out_On'}
+                    psd_report_values{curr_condition,1}(curr_file,:,:) = beapp_calc_psd_output(grp_proc_info_in,file_proc_info_in,eeg_wfp{curr_condition,1},f{curr_condition,1},grp_proc_info_in.largest_nchan);
                 end
             end
             
-         end
-        clearvars -except grp_proc_info_in curr_file src_dir report_info ...
-            psd_report_values save_warn_as_error all_condition_labels all_obsv_sizes report_initialized ntabs
+            if ~all(cellfun('isempty',eeg_wfp))
+                file_proc_info = beapp_prepare_to_save_file('psd',file_proc_info_in, grp_proc_info_in, src_dir{1});
+                try
+                    save(file_proc_info.beapp_fname{1},'eeg_wfp','f','file_proc_info');
+                catch ME
+                    if  (strcmp(ME.identifier,'MATLAB:save:sizeTooBigForMATFile'))
+                        disp([file_proc_info.beapp_fname{1} ': file is too large to save with v6, saving using MAT-file v7.3 (may take longer)']);
+                        save(file_proc_info.beapp_fname{1},'eeg_wfp','f','file_proc_info','-v7.3');
+                    end
+                end
+                
+            end
+            
+        else
+            disp(['no eeg_w variable found in ' file_proc_info_in.beapp_fname ', psd not calculated']) %disp(['no usable segments were found in ' file_proc_info_in.beapp_fname ', psd not calculated']);
+        end
     end
+    clearvars -except grp_proc_info_in curr_file src_dir report_info ...
+                psd_report_values save_warn_as_error all_condition_labels all_obsv_sizes report_initialized ntabs
 end
 warning(save_warn_as_error);
 

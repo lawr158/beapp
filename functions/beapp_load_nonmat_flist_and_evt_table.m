@@ -58,7 +58,7 @@ end
 
 % pull in event offsets or individual linenoise freqs from table if needed 
 if ~isnumeric(event_tag_offsets) || ~isnumeric(src_linenoise) || src_format_typ == 4 || src_format_typ == 5
-   load(event_file_info_table_loc);
+    load(event_file_info_table_loc);
     if run_per_file 
         beapp_file_info_table =  beapp_file_info_table(file_idx,:);
     end

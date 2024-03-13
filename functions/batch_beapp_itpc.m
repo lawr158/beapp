@@ -39,163 +39,174 @@ ntabs=grp_proc_info_in.beapp_itpc_xlsout_mx_on+grp_proc_info_in.beapp_itpc_xlsou
 
 %TEMP VARS (if used move to inputs)
 
-
 for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
+    
     cd(src_dir{1});
     
     if exist(grp_proc_info_in.beapp_fname_all{curr_file},'file')
-        
         load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
         tic;
+        
         if exist('eeg_w','var')
+            
+            curr_eeg = eeg_w;
+            file_proc_info_in = file_proc_info;
             
             % collect file information for output report if user selected
             if grp_proc_info_in.beapp_toggle_mods{'itpc','Module_Xls_Out_On'}
                 if ~report_initialized
                     [report_info,all_condition_labels,all_obsv_sizes,itpc_report_values] = beapp_init_generic_analysis_report (grp_proc_info_in.beapp_fname_all,...
-                        file_proc_info.grp_wide_possible_cond_names_at_segmentation,grp_proc_info_in.largest_nchan,(length(grp_proc_info_in.bw_name)+1),ntabs);
+                        file_proc_info_in.grp_wide_possible_cond_names_at_segmentation,grp_proc_info_in.largest_nchan,(length(grp_proc_info_in.bw_name)+1),ntabs);
                     report_initialized = 1;
                 end
                 
                 [report_info,all_condition_labels,all_obsv_sizes] = beapp_add_row_generic_analysis_report(report_info,...
-                    all_condition_labels,all_obsv_sizes,curr_file,file_proc_info,eeg_w);
+                    all_condition_labels,all_obsv_sizes,curr_file,file_proc_info_in,curr_eeg);
             end
             disp([strcat('File',num2str(curr_file))])            
-            for curr_condition = 1:size(eeg_w,1)
-  
-                if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edited select n trials functionality
-                    if size(eeg_w{curr_condition,1},3)>= grp_proc_info_in.win_select_n_trials
-                        if isempty(file_proc_info.selected_segs{curr_condition,1}) %RL edit
-                            % only keep n trials
-                            file_proc_info.selected_segs{curr_condition,1} = sort(randperm(size(eeg_w{curr_condition,1},3),grp_proc_info_in.win_select_n_trials));
-                        end
-                        inds_to_select = file_proc_info.selected_segs{curr_condition,1}; %RL edit
-                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,inds_to_select); %RL edit
-                    else
-                        % if not enough trials in this condition
-                        disp(['BEAPP file: ' file_proc_info.beapp_fname{1} ' condition ' file_proc_info.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
-                        eeg_itc{curr_condition,1} = [];
-                        % go to next condition in the for loop
-                        continue;
-                    end
-                end
-            
+            for curr_condition = 1:size(curr_eeg,1)
                 
-                diary off;
+                if ~isempty(curr_eeg{curr_condition,1})
+                    
+                    curr_cond_eeg = curr_eeg{curr_condition,1};
 
-                analysis_win_start = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_start .* file_proc_info.beapp_srate));
-                analysis_win_end = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_end .* file_proc_info.beapp_srate))-1;
-            
-                if size(eeg_w{curr_condition},1)>0
-                    for curr_chan=1:size(eeg_w{curr_condition},1)
-                        if ismember(curr_chan,file_proc_info.beapp_indx{1,1})
-                            %run newtimef to compute the psd baseline for
-                            %the first stim
-                            %'winsize',floor(grp_proc_info_in.beapp_itpc_params.win_size*file_proc_info.beapp_srate)
-                            %if curr_chan==1 %TEMP (for speed)
-                            if grp_proc_info_in.beapp_itpc_params.baseline_norm == 1
-                                if grp_proc_info_in.beapp_itpc_params.use_common_baseline
-                                    if curr_condition == grp_proc_info_in.beapp_itpc_params.common_baseline_idx
-                                        if grp_proc_info_in.beapp_itpc_params.set_freq_range
-                                            [~,~,powbase{curr_condition,1}(curr_chan,:),t_powbase,f_powbase]...
-                                                =newtimef(eeg_w{1,1}(curr_chan,analysis_win_start:analysis_win_end,:),size(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),2),...
-                                                [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
-                                                file_proc_info.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],...
-                                                'freqs',[grp_proc_info_in.beapp_itpc_params.min_freq grp_proc_info_in.beapp_itpc_params.max_freq],...
-                                                'itctype','phasecoher','wletmethod','dftfilt3',...
-                                                'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose','off','baseline',...
-                                                [grp_proc_info_in.evt_trial_baseline_win_start*1000 grp_proc_info_in.evt_trial_baseline_win_end*1000]);
+                    if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edited select n trials functionality
+                       if size(curr_cond_eeg,3) >= grp_proc_info_in.win_select_n_trials
+                           if ~isfield(file_proc_info_in,'selected_segs') || size(file_proc_info_in.selected_segs,1) < curr_condition %RL edit
+                               % only keep n trials
+                               file_proc_info.selected_segs{curr_condition,1} = sort(randperm(size(curr_cond_eeg,3),grp_proc_info_in.win_select_n_trials));
+                               file_proc_info_in.selected_segs{curr_condition,1} = sort(randperm(size(curr_cond_eeg,3),grp_proc_info_in.win_select_n_trials));
+                               save(file_proc_info_in.beapp_fname{1}, 'file_proc_info', 'eeg_w')
+                           end
+                           inds_to_select = file_proc_info_in.selected_segs{curr_condition,1}; %RL edit
+                           curr_cond_eeg = curr_cond_eeg(:,:,inds_to_select); %RL edit
+                       else
+                           % if not enough trials in this condition
+                           disp(['BEAPP file: ' file_proc_info_in.beapp_fname{1} ' condition ' file_proc_info_in.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
+                           eeg_itc{curr_condition,1} = [];
+                           % go to next condition in the for loop
+                           continue;
+                       end
+                    end
+                    
+                    diary off;
+    
+                    analysis_win_start = file_proc_info_in.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_start .* file_proc_info_in.beapp_srate));
+                    analysis_win_end = file_proc_info_in.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_end .* file_proc_info_in.beapp_srate))-1;
+                
+                    if size(curr_cond_eeg,1)>0
+                        for curr_chan=1:size(curr_cond_eeg,1)
+                            if ismember(curr_chan,file_proc_info_in.beapp_indx{1,1})
+                                %run newtimef to compute the psd baseline for
+                                %the first stim
+                                %'winsize',floor(grp_proc_info_in.beapp_itpc_params.win_size*file_proc_info_in.beapp_srate)
+                                %if curr_chan==1 %TEMP (for speed)
+                                if grp_proc_info_in.beapp_itpc_params.baseline_norm == 1
+                                    if grp_proc_info_in.beapp_itpc_params.use_common_baseline
+                                        if curr_condition == grp_proc_info_in.beapp_itpc_params.common_baseline_idx
+                                            if grp_proc_info_in.beapp_itpc_params.set_freq_range
+                                                [~,~,powbase{curr_condition,1}(curr_chan,:),t_powbase,f_powbase]...
+                                                    =newtimef(curr_eeg{1,1}(curr_chan,analysis_win_start:analysis_win_end,:),size(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),2),...
+                                                    [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
+                                                    file_proc_info_in.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],...
+                                                    'freqs',[grp_proc_info_in.beapp_itpc_params.min_freq grp_proc_info_in.beapp_itpc_params.max_freq],...
+                                                    'itctype','phasecoher','wletmethod','dftfilt3',...
+                                                    'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose','off','baseline',...
+                                                    [grp_proc_info_in.evt_trial_baseline_win_start*1000 grp_proc_info_in.evt_trial_baseline_win_end*1000]);
+                                            else
+                                                  [~,~,powbase{curr_condition,1}(curr_chan,:),t_powbase,f_powbase]...
+                                                    =newtimef(curr_eeg{1,1}(curr_chan,analysis_win_start:analysis_win_end,:),size(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),2),...
+                                                    [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
+                                                    file_proc_info_in.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],...
+                                                    'itctype','phasecoher','wletmethod','dftfilt3',...
+                                                    'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose','off','baseline',...
+                                                    [grp_proc_info_in.evt_trial_baseline_win_start*1000 grp_proc_info_in.evt_trial_baseline_win_end*1000]);
+                                            end
+    
                                         else
-                                              [~,~,powbase{curr_condition,1}(curr_chan,:),t_powbase,f_powbase]...
-                                                =newtimef(eeg_w{1,1}(curr_chan,analysis_win_start:analysis_win_end,:),size(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),2),...
-                                                [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
-                                                file_proc_info.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],...
-                                                'itctype','phasecoher','wletmethod','dftfilt3',...
-                                                'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose','off','baseline',...
-                                                [grp_proc_info_in.evt_trial_baseline_win_start*1000 grp_proc_info_in.evt_trial_baseline_win_end*1000]);
+                                            powbase{curr_condition,1}(curr_chan,:) = powbase{grp_proc_info_in.beapp_itpc_params.common_baseline_idx,1}(curr_chan,:);
                                         end
-
                                     else
-                                        powbase{curr_condition,1}(curr_chan,:) = powbase{grp_proc_info_in.beapp_itpc_params.common_baseline_idx,1}(curr_chan,:);
+                                        powbase{curr_condition,1}(curr_chan,:) = NaN; %NaN input will lead eeglab to make powbase per stim
+                                        f_powbase(curr_chan,:) = NaN; %NaN input will lead eeglab to make powbase per stim
                                     end
+                                    %use first baseline for each condition
+                                    if grp_proc_info_in.beapp_itpc_params.set_freq_range
+                                        [ERSP{curr_condition,1}(curr_chan,:,:),eeg_itc{curr_condition,1}(curr_chan,:,:),powbase_2{curr_condition,1}(curr_chan,:),t{curr_condition,1},f{curr_condition,1},~,~]...
+                                            =newtimef(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),size(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),2),...
+                                            [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
+                                            file_proc_info_in.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],...  
+                                            'freqs',[grp_proc_info_in.beapp_itpc_params.min_freq grp_proc_info_in.beapp_itpc_params.max_freq],'powbase',powbase{curr_condition,1}(curr_chan,:),'itctype','phasecoher',...
+                                            'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose',...
+                                            'off','wletmethod','dftfilt3');
+                                    else
+                                        [ERSP{curr_condition,1}(curr_chan,:,:),eeg_itc{curr_condition,1}(curr_chan,:,:),powbase_2{curr_condition,1}(curr_chan,:),t{curr_condition,1},f{curr_condition,1},~,~]...
+                                            =newtimef(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),size(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),2),...
+                                            [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
+                                            file_proc_info_in.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],...  
+                                            'powbase',powbase{curr_condition,1}(curr_chan,:),'itctype','phasecoher',...
+                                            'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose',...
+                                            'off','wletmethod','dftfilt3');
+                                    end
+    
                                 else
-                                    powbase{curr_condition,1}(curr_chan,:) = NaN; %NaN input will lead eeglab to make powbase per stim
-                                    f_powbase(curr_chan,:) = NaN; %NaN input will lead eeglab to make powbase per stim
-                                end
-                                %use first baseline for each condition
-                                if grp_proc_info_in.beapp_itpc_params.set_freq_range
-                                    [ERSP{curr_condition,1}(curr_chan,:,:),eeg_itc{curr_condition,1}(curr_chan,:,:),powbase_2{curr_condition,1}(curr_chan,:),t{curr_condition,1},f{curr_condition,1},~,~]...
-                                        =newtimef(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),size(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),2),...
-                                        [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
-                                        file_proc_info.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],...  
-                                        'freqs',[grp_proc_info_in.beapp_itpc_params.min_freq grp_proc_info_in.beapp_itpc_params.max_freq],'powbase',powbase{curr_condition,1}(curr_chan,:),'itctype','phasecoher',...
-                                        'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose',...
-                                        'off','wletmethod','dftfilt3');
-                                else
-                                    [ERSP{curr_condition,1}(curr_chan,:,:),eeg_itc{curr_condition,1}(curr_chan,:,:),powbase_2{curr_condition,1}(curr_chan,:),t{curr_condition,1},f{curr_condition,1},~,~]...
-                                        =newtimef(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),size(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),2),...
-                                        [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
-                                        file_proc_info.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],...  
-                                        'powbase',powbase{curr_condition,1}(curr_chan,:),'itctype','phasecoher',...
-                                        'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose',...
-                                        'off','wletmethod','dftfilt3');
-                                end
-
-                            else
-                                if grp_proc_info_in.beapp_itpc_params.set_freq_range
-                                    [ERSP{curr_condition,1}(curr_chan,:,:),eeg_itc{curr_condition,1}(curr_chan,:,:),powbase_2{curr_condition,1}(curr_chan,:),t{curr_condition,1},f{curr_condition,1},~,~]...
-                                        =newtimef(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),size(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),2),...
-                                        [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
-                                        file_proc_info.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],... 
-                                        'baseline',NaN,'itctype','phasecoher','freqs',... 
-                                        [grp_proc_info_in.beapp_itpc_params.min_freq grp_proc_info_in.beapp_itpc_params.max_freq],...
-                                        'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose',...
-                                        'off');
-                                        powbase{curr_condition,1}(curr_chan,:) = NaN;
-                                        f_powbase(curr_chan,:) = NaN; 
-                                else
-                                    [ERSP{curr_condition,1}(curr_chan,:,:),eeg_itc{curr_condition,1}(curr_chan,:,:),powbase_2{curr_condition,1}(curr_chan,:),t{curr_condition,1},f{curr_condition,1},~,~]...
-                                        =newtimef(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),size(eeg_w{curr_condition,1}(curr_chan,analysis_win_start:analysis_win_end,:),2),...
-                                        [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
-                                        file_proc_info.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],... 
-                                        'baseline',NaN,'itctype','phasecoher',... 
-                                        'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose',...
-                                        'off');
-                                        powbase{curr_condition,1}(curr_chan,:) = NaN;
-                                        f_powbase(curr_chan,:) = NaN; 
+                                    if grp_proc_info_in.beapp_itpc_params.set_freq_range
+                                        [ERSP{curr_condition,1}(curr_chan,:,:),eeg_itc{curr_condition,1}(curr_chan,:,:),powbase_2{curr_condition,1}(curr_chan,:),t{curr_condition,1},f{curr_condition,1},~,~]...
+                                            =newtimef(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),size(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),2),...
+                                            [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
+                                            file_proc_info_in.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],... 
+                                            'baseline',NaN,'itctype','phasecoher','freqs',... 
+                                            [grp_proc_info_in.beapp_itpc_params.min_freq grp_proc_info_in.beapp_itpc_params.max_freq],...
+                                            'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose',...
+                                            'off');
+                                            powbase{curr_condition,1}(curr_chan,:) = NaN;
+                                            f_powbase(curr_chan,:) = NaN; 
+                                    else
+                                        [ERSP{curr_condition,1}(curr_chan,:,:),eeg_itc{curr_condition,1}(curr_chan,:,:),powbase_2{curr_condition,1}(curr_chan,:),t{curr_condition,1},f{curr_condition,1},~,~]...
+                                            =newtimef(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),size(curr_cond_eeg(curr_chan,analysis_win_start:analysis_win_end,:),2),...
+                                            [grp_proc_info_in.evt_analysis_win_start*1000 grp_proc_info_in.evt_analysis_win_end*1000],...
+                                            file_proc_info_in.beapp_srate,[grp_proc_info_in.beapp_itpc_params.min_cyc grp_proc_info_in.beapp_itpc_params.max_cyc],... 
+                                            'baseline',NaN,'itctype','phasecoher',... 
+                                            'plotmean','off','plotersp','off','plotitc','off','plotphasesign','off','plotphaseonly','off','verbose',...
+                                            'off');
+                                            powbase{curr_condition,1}(curr_chan,:) = NaN;
+                                            f_powbase(curr_chan,:) = NaN; 
+                                    end
                                 end
                             end
+                         end
+                    else
+                        eeg_itc{curr_condition,1} =[];
+                    end
+    
+                    % analyze desired part of segment for event related data
+                    if grp_proc_info_in.src_data_type ==2
+                        try
+                            analysis_win_start_t_ind = find(t{curr_condition,1} >= grp_proc_info_in.evt_analysis_win_start*1000,1,'first');
+                      
+                            analysis_win_end_t_ind = find(t{curr_condition,1} <= grp_proc_info_in.evt_analysis_win_end*1000,1,'last');
+                            
+                        catch err
+                            if strcmp(err.identifier,'MATLAB:badsubscript')
+                                error('BEAPP: ITPC analysis segment boundary selected falls outside boundaries used to segment data. Change inputs or re-segment');
+                            else
+                                error(err);
+                            end
                         end
-                     end
-                else
-                    eeg_itc{curr_condition,1} =[];
-                end
-
-                % analyze desired part of segment for event related data
-                if grp_proc_info_in.src_data_type ==2
-                    try
-                        analysis_win_start_t_ind = find(t{curr_condition,1} >= grp_proc_info_in.evt_analysis_win_start*1000,1,'first');
-                  
-                        analysis_win_end_t_ind = find(t{curr_condition,1} <= grp_proc_info_in.evt_analysis_win_end*1000,1,'last');
-                        
-                    catch err
-                        if strcmp(err.identifier,'MATLAB:badsubscript')
-                            error('BEAPP: ITPC analysis segment boundary selected falls outside boundaries used to segment data. Change inputs or re-segment');
-                        else
-                            error(err);
-                        end
+                    else
+                        error('BEAPP: ITPC cannot be run on baseline data');
+                    end
+    
+                    diary on;
+                    % calculate output statistics selected by user on analysis
+                    % window
+                    
+                    if ~isempty(eeg_itc{curr_condition,1}) && grp_proc_info_in.beapp_toggle_mods{'itpc','Module_Xls_Out_On'}
+                        itpc_report_values{curr_condition,1}(curr_file,:,:) = beapp_calc_itpc_output(grp_proc_info_in,file_proc_info_in,eeg_itc{curr_condition,1}(:,:,analysis_win_start_t_ind: analysis_win_end_t_ind),...
+                            f{curr_condition,1},t{curr_condition,1});
                     end
                 else
-                    error('BEAPP: ITPC cannot be run on baseline data');
-                end
-
-                diary on;
-                % calculate output statistics selected by user on analysis
-                % window
-                
-                if ~isempty(eeg_itc{curr_condition,1}) && grp_proc_info_in.beapp_toggle_mods{'itpc','Module_Xls_Out_On'}
-                    itpc_report_values{curr_condition,1}(curr_file,:,:) = beapp_calc_itpc_output(grp_proc_info_in,file_proc_info,eeg_itc{curr_condition,1}(:,:,analysis_win_start_t_ind: analysis_win_end_t_ind),...
-                        f{curr_condition,1},t{curr_condition,1});
+                    eeg_itc{curr_condition,1} = [];
                 end
             end
             
@@ -206,14 +217,14 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
                 if size(f_powbase,2) < 2
                     f_powbase = f{1,1};
                 end
-                file_proc_info = beapp_prepare_to_save_file('itpc',file_proc_info, grp_proc_info_in, src_dir{1});
+                file_proc_info = beapp_prepare_to_save_file('itpc',file_proc_info_in, grp_proc_info_in, src_dir{1});
                 save(file_proc_info.beapp_fname{1},'file_proc_info','eeg_itc','ERSP','t','f','powbase','f_powbase');
             end
         else
-            disp(['no usable segments were found in ' file_proc_info.beapp_fname ',itpc not calculated']);
+            disp(['no usable segments were found in ' file_proc_info_in.beapp_fname ', itpc not calculated']);
         end
-        clearvars -except grp_proc_info_in curr_file src_dir report_info itpc_report_values  all_condition_labels all_obsv_sizes report_initialized ntabs
     end
+    clearvars -except grp_proc_info_in curr_file src_dir report_info itpc_report_values all_condition_labels all_obsv_sizes report_initialized ntabs
 end
 
 if grp_proc_info_in.beapp_toggle_mods{'itpc','Module_Xls_Out_On'}

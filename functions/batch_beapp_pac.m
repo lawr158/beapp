@@ -38,38 +38,46 @@ if grp_proc_info_in.pac_calc_btwn_chans==1
 %     pac_get_phase(grp_proc_info_in); %For getting phase series, uses
 %     newcrossf from eeglab
 else
+    
+src_dir = find_input_dir('pac',grp_proc_info_in.beapp_toggle_mods);
+%Preallocate arrays and matrices
+max_n_channels = grp_proc_info_in.largest_nchan;
 
-    src_dir = find_input_dir('pac',grp_proc_info_in.beapp_toggle_mods);
-    %Preallocate arrays and matrices
-    max_n_channels = grp_proc_info_in.largest_nchan;
+for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
+    
+    cd(src_dir{1});
 
-     for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
+    if exist(grp_proc_info_in.beapp_fname_all{curr_file},'file')
+        % load eeg if module takes continuous input
+        load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
+        tic;
+        
+        if exist('eeg_w','var')
 
-        cd(src_dir{1});
-         if grp_proc_info_in.pac_save_all_reports == 1 ||  ...
-                 ismember(grp_proc_info_in.beapp_fname_all{curr_file}, grp_proc_info_in.pac_save_participants) ||...%%If we're saving reports, make source directory
-                 ~isempty(grp_proc_info_in.pac_save_channels)
-             cd(grp_proc_info_in.beapp_toggle_mods{'pac','Module_Dir'}{1});
-            mkdir(strcat(erase(grp_proc_info_in.beapp_fname_all{curr_file},'.mat'),'_image_outputs'));
-            cd(src_dir{1});
-         end
-
-          if exist(strcat(src_dir{1},filesep,grp_proc_info_in.beapp_fname_all{curr_file}),'file')
-             tic;
-             % load eeg if module takes continuous input
-            load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
+            if grp_proc_info_in.pac_save_all_reports == 1 || ...
+                    ismember(grp_proc_info_in.beapp_fname_all{curr_file}, grp_proc_info_in.pac_save_participants) || ...%%If we're saving reports, make source directory
+                    ~isempty(grp_proc_info_in.pac_save_channels)
+                cd(grp_proc_info_in.beapp_toggle_mods{'pac','Module_Dir'}{1});
+                mkdir(strcat(erase(grp_proc_info_in.beapp_fname_all{curr_file},'.mat'),'_image_outputs'));
+                cd(src_dir{1});
+            end
+            
             if size(file_proc_info.beapp_indx{1,1},2) == 1 %flip beapp_indx if needed
                 file_proc_info.beapp_indx{1,1} = file_proc_info.beapp_indx{1,1}';
             end
             comodulogram_third_dim_headers = cell(1,size(file_proc_info.beapp_indx{1,1},2));
             for curr_condition = 1:size(eeg_w,1)
+
                 if ~isempty(eeg_w{curr_condition,1})
-                    curr_eeg = eeg_w{curr_condition,1}; 
+
+                    curr_eeg = eeg_w{curr_condition,1};
+    
                     if ~isempty(grp_proc_info_in.win_select_n_trials)
                         numsegs = grp_proc_info_in.win_select_n_trials;
                     else 
                         numsegs = size(curr_eeg,3);
                     end
+    
                     if grp_proc_info_in.slid_win_on == 1
                         amount2slide = .1; %fraction of the window size to increment
                         num_slides = floor((file_proc_info.beapp_win_size_in_samps - grp_proc_info_in.slid_win_sz*file_proc_info.beapp_srate)...
@@ -117,11 +125,11 @@ else
                             else
                                 segments_torun = (linspace(1,size(curr_eeg,3),size(curr_eeg,3)));
                             end 
-
+    
                             for seg = 1:size(segments_torun,2) 
                                 curr_seg = segments_torun(1,seg); 
                                 signal = curr_eeg(chan,:,curr_seg); 
-
+    
                                 if grp_proc_info_in.slid_win_on == 1
                                     %if using a sliding window, need a time dimension 
                                     curr_chan_comodulogram = NaN(grp_proc_info_in.pac_high_fq_res, grp_proc_info_in.pac_low_fq_res,size(curr_eeg,3),num_slides);
@@ -135,7 +143,7 @@ else
                                         comodulogram_4th_dim_headers(1,time) = ((sample_start+sample_end)/2) / file_proc_info.beapp_srate;
                                      end
                                 else
-
+    
                                     [curr_chan_comodulogram(:,:,seg), curr_z_score, curr_surr_max, phase_bins, curr_amp_dist, curr_phase_dist] = beapp_calc_comod(signal,file_proc_info.beapp_srate,low_fq_range,high_fq_range,...
                                             grp_proc_info_in.pac_method,grp_proc_info_in.pac_low_fq_width,grp_proc_info_in.pac_high_fq_width,grp_proc_info_in.pac_low_fq_res,...
                                             grp_proc_info_in.pac_high_fq_res,grp_proc_info_in.pac_calc_zscores,grp_proc_info_in.pac_variable_hf_filt);
@@ -159,11 +167,11 @@ else
                                 amp_dist{curr_condition,1}(:,:,:,:,chan_idx) = curr_chan_amp_dist;
                             end
                             %all_chan_phase_amp(chan,:) = nanmean(curr_chan_phase_amp,1);
-
-
+    
+    
                         end
                     end
-
+    
                     %close(bar)
                   %  amp_dist = squeeze(nanmean(amp_dist,4));
                     amp_dist{curr_condition,1} = nanmean(amp_dist{curr_condition,1},4);
@@ -176,9 +184,9 @@ else
                             amp_dist{curr_condition,1} = reshape(amp_dist{curr_condition,1},z([1 2 3 5]));
                         end
                     end
-
+    
                     [zscore_comod{curr_condition,1}, rawmi_comod{curr_condition,1}, phase_bias_comod{curr_condition,1}] = beapp_calc_mi_zscore(amp_dist{curr_condition,1},grp_proc_info_in.pac_calc_zscores);
-
+    
                     comodulogram_column_headers = low_fq_range;
                     comodulogram_row_headers = high_fq_range;
                     comodulogram_row_headers = comodulogram_row_headers';
@@ -205,45 +213,46 @@ else
                         end
                     end
                 else
-                    amp_dist{curr_condition,1}= [];
-                    zscore_comod{curr_condition,1}= [];
-                    rawmi_comod{curr_condition,1}= [];
-                    phase_bias_comod{curr_condition,1}= []; 
+                    amp_dist{curr_condition,1} = [];
+                    zscore_comod{curr_condition,1} = [];
+                    rawmi_comod{curr_condition,1} = [];
+                    phase_bias_comod{curr_condition,1} = []; 
                 end
             end
             %% save output .mat and excel files
-             file_proc_info = beapp_prepare_to_save_file('pac',file_proc_info, grp_proc_info_in, src_dir{1});
-             cd(grp_proc_info_in.beapp_toggle_mods{'pac','Module_Dir'}{1});
-             filename = erase(file_proc_info.beapp_fname{1},'.mat');
-             if grp_proc_info_in.slid_win_on == 1
-                 if grp_proc_info_in.pac_save_amp_dist == 1
+            file_proc_info = beapp_prepare_to_save_file('pac',file_proc_info, grp_proc_info_in, src_dir{1});
+            cd(grp_proc_info_in.beapp_toggle_mods{'pac','Module_Dir'}{1});
+            filename = erase(file_proc_info.beapp_fname{1},'.mat');
+            if grp_proc_info_in.slid_win_on == 1
+                if grp_proc_info_in.pac_save_amp_dist == 1
                     save(strcat(filename,'_pac_results','.mat'),'comodulogram','comodulogram_column_headers','comodulogram_row_headers','comodulogram_third_dim_headers','comodulogram_4th_dim_headers','amp_dist','zscore_comod','rawmi_comod','phase_bias_comod','file_proc_info');
-                 else
+                else
                     save(strcat(filename,'_pac_results','.mat'),'comodulogram','comodulogram_column_headers','comodulogram_row_headers','comodulogram_third_dim_headers','comodulogram_4th_dim_headers','zscore_comod','rawmi_comod','phase_bias_comod','file_proc_info');
-                 end
-             else
+                end
+            else
                 if grp_proc_info_in.pac_save_amp_dist == 1 
                     save(strcat(filename,'_pac_results','.mat'),'comodulogram','comodulogram_column_headers','comodulogram_row_headers','comodulogram_third_dim_headers','amp_dist','zscore_comod','rawmi_comod','phase_bias_comod','file_proc_info');
                 else
                     save(strcat(filename,'_pac_results','.mat'),'comodulogram','comodulogram_column_headers','comodulogram_row_headers','comodulogram_third_dim_headers','zscore_comod','rawmi_comod','phase_bias_comod','file_proc_info');                  
                 end
-             end
-             %this is currently broken, probably because xlswrite is now
-             %not recommended (use writetable if fixing)
-             if grp_proc_info_in.pac_xlsout_on == 1 
-                 %write and save excel files, where each channel is a sheet
-                 comodulogram_row_headers = num2cell(comodulogram_row_headers);
-                 comodulogram_column_headers = num2cell(comodulogram_column_headers);
-                 for chan = 1:size(rawmi_comod{curr_condition,1},3)
-                     curr_results = rawmi_comod{curr_condition,1}(:,:,chan);
-                     T = array2table(curr_results,'VariableNames',cellfun(@num2str,comodulogram_column_headers,'UniformOutput',false),...
-                         'RowNames',cellfun(@num2str,comodulogram_row_headers,'UniformOutput',false));
-                     writetable(T,strcat(filename,'_',comodulogram_third_dim_headers{chan},'_pac_report.xlsx'),'WriteRowNames',true); 
-                 end
-             end
-          end
-
-
+            end
+            %this is currently broken, probably because xlswrite is now
+            %not recommended (use writetable if fixing)
+            if grp_proc_info_in.pac_xlsout_on == 1 
+                %write and save excel files, where each channel is a sheet
+                comodulogram_row_headers = num2cell(comodulogram_row_headers);
+                comodulogram_column_headers = num2cell(comodulogram_column_headers);
+                for chan = 1:size(rawmi_comod{curr_condition,1},3)
+                    curr_results = rawmi_comod{curr_condition,1}(:,:,chan);
+                    T = array2table(curr_results,'VariableNames',cellfun(@num2str,comodulogram_column_headers,'UniformOutput',false),...
+                        'RowNames',cellfun(@num2str,comodulogram_row_headers,'UniformOutput',false));
+                    writetable(T,strcat(filename,'_',comodulogram_third_dim_headers{chan},'_pac_report.xlsx'),'WriteRowNames',true); 
+                end
+            end
+        else
+            disp(['no usable segments were found in ' file_proc_info.beapp_fname ', pac not calculated']);
+        end
     end
-    clearvars -except grp_proc_info_in src_dir curr_file
+end
+clearvars -except grp_proc_info_in src_dir curr_file
 end

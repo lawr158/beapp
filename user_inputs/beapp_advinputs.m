@@ -113,31 +113,32 @@ grp_proc_info.beapp_file_idx = 1; %used only if running per file
 % FORMATTING SPECIFICATIONS
 grp_proc_info.mff_seg_throw_out_bad_segments = 1; % throw out segments marked bad when importing pre-segmented MFF files. def = 1; 
 grp_proc_info.src_eeglab_cond_info_field = 'condition'; % name of field with condition information for EEGLAB .set files (ex .cel_type or .condition)
+grp_proc_info.src_save_date_time = 0; % def = 0. 0 = date and time from mff file is not extracted. 1 = date and time from mff file is extracted and saved in file_proc_info
 
 % FILTER SPECIFICATIONS
 %Sets the buffer at the begining and end of the source files when making segments
 %This should only be set to 0 if no filtering is applied to the data.
-grp_proc_info.src_buff_start_nsec=2; %number of seconds buffer at the start of the EEG recording that can be excluded after filtering and artifact removal (buff1_nsec)
-grp_proc_info.src_buff_end_nsec=2; %number of seconds buffer at the end of the EEG recording that can be excluded after filtering and artifact removal (buff2_nsec)
+grp_proc_info.src_buff_start_nsec = 2; %number of seconds buffer at the start of the EEG recording that can be excluded after filtering and artifact removal (buff1_nsec)
+grp_proc_info.src_buff_end_nsec = 2; %number of seconds buffer at the end of the EEG recording that can be excluded after filtering and artifact removal (buff2_nsec)
 
 % ICA/HAPPE/MARA
 % def = 0; turns on HAPPE/MARA visualisations - will then require user feedback for each file
 grp_proc_info.happe_plotting_on = 0; 
 
 % REREFENCING SPECIFICATIONS 
-grp_proc_info.beapp_csdlp_interp_flex=4; % m=2...10, 4 spline. def = 4; Used in CSD toolbox only
+grp_proc_info.beapp_csdlp_interp_flex = 4; % m=2...10, 4 spline. def = 4; Used in CSD toolbox only
 grp_proc_info.beapp_csdlp_lambda=1e-5; %learning rate def = 1e-5;
 
 % DETRENDING SPECIFICATIONS 
-grp_proc_info.kalman_b=0.9999; %used to determine smoothing in the Kalman filter
-grp_proc_info.kalman_q_init=1; %used to determine smoothing in Kalman filter
+grp_proc_info.kalman_b = 0.9999; %used to determine smoothing in the Kalman filter
+grp_proc_info.kalman_q_init = 1; %used to determine smoothing in Kalman filter
 
 % SEGMENTING SPECIFICATIONS
 grp_proc_info.beapp_happe_seg_rej_plotting_on = 0; % def = 0; show jointprob visualizations if happe segment rejection is on 
 
 %for moving average filter applied to ERP data
-grp_proc_info.beapp_erp_maf_on=0; %flags on the moving average filter when the ERP events are generated
-grp_proc_info.beapp_erp_maf_order=30; %Order of the moving average filter
+grp_proc_info.beapp_erp_maf_on = 0; %flags on the moving average filter when the ERP events are generated
+grp_proc_info.beapp_erp_maf_order = 30; %Order of the moving average filter
 
 %To segment nth trial (not every one)
 grp_proc_info.select_nth_trial = []; %set to [] to select all relevant trials
@@ -148,22 +149,23 @@ grp_proc_info.beapp_event_group_stim = 0; %def = 0; to group sequences of stimul
 
 %% output measure settings
 % PSD XLS report settings
-grp_proc_info.psd_pmtm_l=3; %number of tapers to use if using the multitaper window type, should be a positive integer 3 or greater
-%Report values in: (must select at least 1)
-grp_proc_info.beapp_xlsout_av_on=1; %toggles on the mean power option
-grp_proc_info.beapp_xlsout_sd_on=1; %toggles on the standard deviation option
-grp_proc_info.beapp_xlsout_med_on=1; %toggles on the median option
+%PSD Multitaper Advanced Options
+grp_proc_info.psd_pmtm_l = 3; %number of tapers to use if using the multitaper window type, should be a positive integer 3 or greater
 %Report categories:
-grp_proc_info.beapp_xlsout_raw_on=1; %toggles on that the absolute power should be reported
-grp_proc_info.beapp_xlsout_norm_on=1; %toggles on that the relative power should be reported
-grp_proc_info.beapp_xlsout_log_on=1; %toggles on that the natural log should be reported
-grp_proc_info.beapp_xlsout_log10_on=1; %toggles on that the log10 should be reported
+grp_proc_info.beapp_xlsout_raw_on = 1; %toggles on that the absolute power should be reported
+grp_proc_info.beapp_xlsout_norm_on = 1; %toggles on that the relative power should be reported
+grp_proc_info.beapp_xlsout_log_on = 1; %toggles on that the natural log should be reported
+grp_proc_info.beapp_xlsout_log10_on = 1; %toggles on that the log10 should be reported
+%Report values in: (must select at least 1)
+grp_proc_info.beapp_xlsout_av_on = 1; %toggles on the mean power option
+grp_proc_info.beapp_xlsout_sd_on = 1; %toggles on the standard deviation option
+grp_proc_info.beapp_xlsout_med_on = 1; %toggles on the median option
 
 % ITPC 
-grp_proc_info.beapp_itpc_xlsout_mx_on=1; % report max ITPC in xls report?
-grp_proc_info.beapp_itpc_xlsout_av_on=1; % report mean ITPC in xls report?
-grp_proc_info.beapp_itpc_params.use_common_baseline=1;
-grp_proc_info.beapp_itpc_params.common_baseline_idx=1;
+grp_proc_info.beapp_itpc_xlsout_mx_on = 1; % report max ITPC in xls report?
+grp_proc_info.beapp_itpc_xlsout_av_on = 1; % report mean ITPC in xls report?
+grp_proc_info.beapp_itpc_params.use_common_baseline = 1;
+grp_proc_info.beapp_itpc_params.common_baseline_idx = 1;
 
 % PAC
 grp_proc_info.slid_win_on = 0; %turn on to measure pac across time 
