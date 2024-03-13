@@ -113,6 +113,7 @@ grp_proc_info.beapp_file_idx = 1; %used only if running per file
 % FORMATTING SPECIFICATIONS
 grp_proc_info.mff_seg_throw_out_bad_segments = 1; % throw out segments marked bad when importing pre-segmented MFF files. def = 1; 
 grp_proc_info.src_eeglab_cond_info_field = 'condition'; % name of field with condition information for EEGLAB .set files (ex .cel_type or .condition)
+grp_proc_info.src_save_date_time = 0; % def = 0. 0 = date and time from mff file is not extracted. 1 = date and time from mff file is extracted and saved in file_proc_info
 
 % FILTER SPECIFICATIONS
 %Sets the buffer at the begining and end of the source files when making segments
