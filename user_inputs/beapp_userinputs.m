@@ -8,7 +8,7 @@
 % 
 % Contributors to BEAPP:
 % April R. Levin, MD (april.levin@childrens.harvard.edu)
-% Adriana MÈndez Leal (asmendezleal@gmail.com)
+% Adriana M√©ndez Leal (asmendezleal@gmail.com)
 % Laurel Gabard-Durnam, PhD (laurel.gabarddurnam@gmail.com)
 % Heather M. O'Leary (Heather.oleary1@gmail.com)
 % 
@@ -17,7 +17,7 @@
 % april.levin@childrens.harvard.edu
 %
 % In publications, please reference:
-% Levin AR, MÈndez Leal AS, Gabard-Durnam LJ and OíLeary HM (2018) 
+% Levin AR, M√©ndez Leal AS, Gabard-Durnam LJ and O‚ÄôLeary HM (2018) 
 % BEAPP: The Batch Electroencephalography Automated Processing Platform.
 %  Front. Neurosci. 12:513. doi: 10.3389/fnins.2018.00513
 %
@@ -79,14 +79,14 @@
 % MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See GNU General
 % Public License for more details.
 % 
-% In no event shall Boston Childrenís Hospital (BCH), the BCH Department of
+% In no event shall Boston Children‚Äôs Hospital (BCH), the BCH Department of
 % Neurology, the Laboratories of Cognitive Neuroscience (LCN), or software 
 % contributors to BEAPP be liable to any party for direct, indirect, 
 % special, incidental, or consequential damages, including lost profits, 
 % arising out of the use of this software and its documentation, even if 
-% Boston Childrenís Hospital,the Laboratories of Cognitive Neuroscience, 
+% Boston Children‚Äôs Hospital,the Laboratories of Cognitive Neuroscience, 
 % and software contributors have been advised of the possibility of such 
-% damage. Software and documentation is provided ìas is.î Boston Childrenís 
+% damage. Software and documentation is provided ‚Äúas is.‚Äù Boston Children‚Äôs 
 % Hospital, the Laboratories of Cognitive Neuroscience, and software 
 % contributors are under no obligation to provide maintenance, support, 
 % updates, enhancements, or modifications.
@@ -266,14 +266,13 @@ grp_proc_info.beapp_toggle_mods{'psd','Module_Xls_Out_On'}=0; %flags the export 
 %for event-related data only
 grp_proc_info.psd_baseline_normalize = 0; %0 to not normalize, 1 to normalize using decibel conversion; 2 to normalize with percent change 
 
-% ITPC SPECIFICATIONS
+% ITPC/ERSP SPECIFICATIONS
 % see newtimef in EEGLAB for more details on these inputs
 grp_proc_info.beapp_itpc_params.win_size= 0.128; %CURRENTLY NOT USED; the win_size (in seconds) to calculate ERSP and ITPC from the ERPs of the composed dataset (e.g. should result in a number of samples an integer and divide trials equaly ex: 10)
 grp_proc_info.beapp_itpc_params.baseline_norm = 1;
-grp_proc_info.beapp_itpc_params.use_common_baseline = 1;
-grp_proc_info.beapp_itpc_params.common_baseline_idx = 1;
-grp_proc_info.beapp_itpc_params.min_freq = 2;  % def = 2; frequency limits
-grp_proc_info.beapp_itpc_params.max_freq = 80;  % def = 80
+grp_proc_info.beapp_itpc_params.set_freq_range = 0; %default 0 = off, 1 = on uses min_freq and max_freq for frequent limits, minfreq is determined by the number of data points, cycles and sampling frequency.
+grp_proc_info.beapp_itpc_params.min_freq = 2; % def = 2; minimum frequency limit 
+grp_proc_info.beapp_itpc_params.max_freq = 50; % def = 50; maximum frequency limit
 grp_proc_info.beapp_itpc_params.min_cyc = 2; % def = 2; number of cycles in each Morlet wavelet
 grp_proc_info.beapp_itpc_params.max_cyc = 2; % def = 0; 0 = use same window size across freqs, 1 = use same number of cycles, 0<max_cyc<1 = increase cycles  linearly, max_cyc>1 = incr cycles from min_cyc up to max cyc
 grp_proc_info.beapp_toggle_mods{'itpc','Module_Xls_Out_On'}=0;%flags the export data to xls report option on
