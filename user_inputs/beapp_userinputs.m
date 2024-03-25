@@ -312,5 +312,5 @@ grp_proc_info.pac_chans_to_analyze = []; % list channels to analyze if only some
 
 % BYCYCLE SPECIFICATIONS
 grp_proc_info.bycycle_freq_bands = [6,8;8,10;12,14]; % Ex: 6,8;8,10. Enter minimum, maximum frequency for each range, and separate ranges using a semicolon.
-grp_proc_info.bycycle_gen_reports = true;
-grp_proc_info.bycycle_save_reports = true;
+grp_proc_info.bycycle_gen_reports = 1;
+grp_proc_info.bycycle_save_reports = 1;
