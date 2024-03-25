@@ -100,8 +100,8 @@
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % GENERAL USER INPUTS for BEAPP: Set these for any data runs
-grp_proc_info.src_dir = {'C:\Sample_directory'}; % the directory containing your source files
-grp_proc_info.beapp_curr_run_tag = ''; % The tag you would like to append to folder names for this run. def = '' or 'NONE'. 'NONE' mutes timestamping. If not given on a rerun, a timestamp will be used. 
+grp_proc_info.src_dir = {'Z:\beapp_testing'}; % the directory containing your source files
+grp_proc_info.beapp_curr_run_tag = 'test'; % The tag you would like to append to folder names for this run. def = '' or 'NONE'. 'NONE' mutes timestamping. If not given on a rerun, a timestamp will be used. 
 grp_proc_info.beapp_prev_run_tag = ''; % def = ''.  run tag for previous run that you would like to use as source data for rerun. can be timestamp, but must be exact.
 grp_proc_info.beapp_advinputs_on = 0; % flag that toggles advanced user options, default is 0 (user did not set advanced user values)
 
@@ -109,12 +109,12 @@ grp_proc_info.beapp_advinputs_on = 0; % flag that toggles advanced user options,
 % pipeline flags:0=off, 1=on
 grp_proc_info.beapp_toggle_mods{'format'     ,{'Module_On','Module_Export_On'}}=[1,1]; % Convert source files to BEAPP format
 grp_proc_info.beapp_toggle_mods{'prepp'      ,{'Module_On','Module_Export_On'}}=[0,0]; % Turn on PREP Pipeline
-grp_proc_info.beapp_toggle_mods{'filt'       ,{'Module_On','Module_Export_On'}}=[0,0]; % Turn on filtering
+grp_proc_info.beapp_toggle_mods{'filt'       ,{'Module_On','Module_Export_On'}}=[1,1]; % Turn on filtering
 grp_proc_info.beapp_toggle_mods{'rsamp'      ,{'Module_On','Module_Export_On'}}=[1,1]; % Turn on resampling
 grp_proc_info.beapp_toggle_mods{'ica'        ,{'Module_On','Module_Export_On'}}=[1,1]; % Turn on ICA module (ICA, ICA+MARA, HAPPE)
 grp_proc_info.beapp_toggle_mods{'rereference',{'Module_On','Module_Export_On'}}=[0,0]; % Turn on rereferencing
 grp_proc_info.beapp_toggle_mods{'detrend'    ,{'Module_On','Module_Export_On'}}=[0,0]; % Turn on detrending 
-grp_proc_info.beapp_toggle_mods{'segment'    ,{'Module_On','Module_Export_On'}}=[1,1]; % Turn on segmentation
+grp_proc_info.beapp_toggle_mods{'segment'    ,{'Module_On','Module_Export_On'}}=[0,0]; % Turn on segmentation
 grp_proc_info.beapp_toggle_mods{'psd'        ,{'Module_On','Module_Export_On'}}=[0,0]; % flag that toggles the PSD calculations
 grp_proc_info.beapp_toggle_mods{'itpc'       ,{'Module_On','Module_Export_On'}}=[0,0]; % turns ITPC analysis on, use with event data only
 grp_proc_info.beapp_toggle_mods{'topoplot'   ,{'Module_On','Module_Export_On'}}=[0,0]; % Turn on topoplots
@@ -124,8 +124,8 @@ grp_proc_info.beapp_toggle_mods{'bycycle'    ,{'Module_On','Module_Export_On'}}=
 
 % FORMATTING SPECIFICATIONS
 % Formatting specifications: Required
-grp_proc_info.src_format_typ = 1; % type of source file 1=.mat files, 2=mff, 3=PRE-PROCESSED + PRE-SEGMENTED MFF  4 = .set (EEGLAB) files
-grp_proc_info.src_data_type = 1; % type of data being processed (for segmenting,see user guide): 1 = baseline, 2 = event related 3= conditioned baseline
+grp_proc_info.src_format_typ = 2; % type of source file 1=.mat files, 2=mff, 3=PRE-PROCESSED + PRE-SEGMENTED MFF  4 = .set (EEGLAB) files
+grp_proc_info.src_data_type = 2; % type of data being processed (for segmenting,see user guide): 1 = baseline, 2 = event related 3= conditioned baseline
 grp_proc_info.src_presentation_software = 1; % presentation software used for paradigm (1 = EPrime, 2 = Presentation. def = 1)
 
 % Formatting specifications: Optional
@@ -208,13 +208,13 @@ grp_proc_info.beapp_baseline_rej_perc_above_threshold = .01; % def = .01; (.01%,
 
 % SEGMENTING SPECIFICATIONS -- EVENT-RELATED/ CONDITIONED BASELINE ONLY
 grp_proc_info.beapp_event_use_tags_only = 1; % def = 0 (use event codes/tags/strings and condition/cel information). 1 = use event codes/tags/strings only for segmenting (usually for .set source files)
-grp_proc_info.beapp_event_code_onset_strs = {'Segment'}; %Ex {'stm+'} the event codes assigned during data collection to signifiy the onset of the stimulus. 
+grp_proc_info.beapp_event_code_onset_strs = {'stm+'}; %Ex {'stm+'} the event codes assigned during data collection to signifiy the onset of the stimulus. 
 
 % Desired condition names: Order must match cell numbers if cell sets are being used, or event tags if only event tags are being used
-grp_proc_info.beapp_event_eprime_values.condition_names = {'Segment'};
-% grp_proc_info.beapp_event_eprime_values.event_codes(:,1) = [1]; % these MUST line up across all possible cell sets
-% grp_proc_info.beapp_event_eprime_values.event_codes(:,2) = [2];
-% grp_proc_info.beapp_event_eprime_values.event_codes(:,3) = [3];
+grp_proc_info.beapp_event_eprime_values.condition_names = {'Standard', 'Native', 'Non-Native'};
+grp_proc_info.beapp_event_eprime_values.event_codes(:,1) = [1,2,3]; % these MUST line up across all possible cell sets
+grp_proc_info.beapp_event_eprime_values.event_codes(:,2) = [10,12,13];
+grp_proc_info.beapp_event_eprime_values.event_codes(:,3) = [11,12,13];
 
 % only used for conditioned baseline, otherwise optional: 
 grp_proc_info.beapp_event_code_offset_strs = {''}; % def = {''} Ex {'TRSP'} the event codes assigned during data collection to signifiy the offset of the stimulus (should match onset strs)

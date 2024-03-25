@@ -47,6 +47,13 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
         
         load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
         tic;
+        if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edited select n trials functionality
+            if ~isfield(file_proc_info,'selected_segs')
+                file_proc_info.selected_segs = create_selected_segs(eeg_w,grp_proc_info_in.win_select_n_trials);
+                save(file_proc_info_in.beapp_fname{1}, 'file_proc_info', 'eeg_w')
+            end
+        end
+        
         if exist('eeg_w','var')
             
             % collect file information for output report if user selected
