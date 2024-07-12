@@ -60,7 +60,7 @@ for curr_file = 1:length(grp_proc_info_in.beapp_fname_all)
         
         % initialize ouput and intermediate structs
         eeg_w=cell(length(file_proc_info.grp_wide_possible_cond_names_at_segmentation),1);
-        EEG_epoch_structs=cell(length(file_proc_info.evt_conditions_being_analyzed.Condition_Name),size(eeg,2));
+        EEG_epoch_structs=cell(1,size(eeg,2));%RL edit
         
         diary off;
         
@@ -161,7 +161,7 @@ for curr_file = 1:length(grp_proc_info_in.beapp_fname_all)
                     %%MM 9/9/19:
                     if grp_proc_info_in.beapp_event_group_stim == 1
                         tmp_EEG_struct_rejglobal = remove_evt_seqs_in_groups(length(file_proc_info.grp_wide_possible_cond_names_at_segmentation),...
-                             length(EEG_epoch_structs{1, 1}.epoch),tmp_EEG_struct_rejglobal,EEG_epoch_structs{1,1}.epoch,...
+                             length(EEG_epoch_structs{curr_epoch}.epoch),tmp_EEG_struct_rejglobal,EEG_epoch_structs{curr_epoch}.epoch,...%RL edit
                              file_proc_info.grp_wide_possible_cond_names_at_segmentation);
                     end
 % %                      if strcmp(grp_proc_info_in.beapp_curr_run_tag,'no_bsl_same_45_chosen_at_seg_042418')
@@ -232,9 +232,9 @@ for curr_file = 1:length(grp_proc_info_in.beapp_fname_all)
 %                         
                         eeg_w{curr_condition,1}=cat(3,eeg_w{curr_condition,1}, curr_epoch_curr_cond_eeg_w{curr_condition,1});
                         %8/29/19: add the info about each kept epoch to file_proc_info
-                        if isfield(EEG_epoch_structs{1,1},'epoch')
-                            if ~isempty(EEG_epoch_structs{1,1}.epoch)
-                                file_proc_info.epoch{curr_condition,1} = EEG_epoch_structs{1,1}.epoch(segs_to_keep);
+                        if isfield(EEG_epoch_structs{curr_epoch},'epoch')%RL edit
+                            if ~isempty(EEG_epoch_structs{curr_epoch}.epoch)%RL edit
+                                file_proc_info.epoch{curr_condition,1} = EEG_epoch_structs{curr_epoch}.epoch(segs_to_keep);%RL edit
                             end
                         end
                         clear curr_cond_event_list_idxs
@@ -254,15 +254,8 @@ for curr_file = 1:length(grp_proc_info_in.beapp_fname_all)
         file_proc_info.evt_conditions_being_analyzed.Num_Segs_Post_Rej(cond_inds_table_all)= cellfun(@ (x) size(x,3),eeg_w(cond_inds_values_all));
         
         %% (added 2/19)
-        if ~isempty(grp_proc_info_in.win_select_n_trials)
-            if size(eeg_w{curr_condition,1},3)>= grp_proc_info_in.win_select_n_trials
-                for curr_condition = 1:size(eeg_w,1)
-                    inds_to_select = sort(randperm(size(eeg_w{curr_condition,1},3),grp_proc_info_in.win_select_n_trials));
-                    file_proc_info.selected_segs{curr_condition,1} = inds_to_select;
-                end
-            else 
-                file_proc_info.selected_segs{curr_condition,1} = [];
-            end
+        if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edit
+            file_proc_info.selected_segs = create_selected_segs(eeg_w,grp_proc_info_in.win_select_n_trials);
         end
         %%
         

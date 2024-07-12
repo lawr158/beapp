@@ -35,9 +35,9 @@
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % set location for beapp to load user inputs and advanced inputs
-grp_proc_info.beapp_alt_user_input_location = {''}; % def = {''}, which will use beapp_userinputs.m 
+grp_proc_info.beapp_alt_user_input_location = {'V:\Groups\BEAN\02_Preprocessing\01_BEAPP_Inputs\bean_erp.m'}; % def = {''}, which will use beapp_userinputs.m 
 grp_proc_info.beapp_alt_adv_user_input_location = {''}; % def = {''}, which will use beapp_advinputs.m
 
 % set location for beapp to load mat, mff, or rerun file info tables
-grp_proc_info.beapp_alt_beapp_file_info_table_location = {''}; % def = {''}, which will use beapp_file_info_table.mat
+grp_proc_info.beapp_alt_beapp_file_info_table_location = {'V:\Groups\BEAN\02_Preprocessing\01_BEAPP_Inputs\beapp_file_info_table.mat'}; % def = {''}, which will use beapp_file_info_table.mat
 grp_proc_info.beapp_alt_rerun_file_info_table_location = {''}; % def = {''},  which will use rerun_fselect_table.mat

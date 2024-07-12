@@ -48,8 +48,8 @@ if grp_proc_info.beapp_advinputs_on
     if strcmp(grp_proc_info.beapp_alt_adv_user_input_location{1},'')
         beapp_advinputs;
     else
-        [~,adv_input_script_name] = fileparts(grp_proc_info.beapp_alt_adv_user_input_location{1});
-        eval(adv_input_script_name);clear adv_input_script_name;
+        [adv_filepath,adv_input_script_name] = fileparts(grp_proc_info.beapp_alt_adv_user_input_location{1}); %RL added adv_filepath
+        run(fullfile(adv_filepath,adv_input_script_name));clear adv_filepath adv_input_script_name; %RL changed eval to run
     end
 end
 

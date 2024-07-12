@@ -48,7 +48,16 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
         load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
         tic;
         if exist('eeg_w','var')
-            
+
+            %RL added:
+            if ~isempty(grp_proc_info_in.win_select_n_trials)
+                if ~isfield(file_proc_info,'selected_segs') %if selected segs wasn't set in Segment, set it now
+                    file_proc_info.selected_segs = create_selected_segs(eeg_w,grp_proc_info_in.win_select_n_trials);
+                    save(file_proc_info.beapp_fname{1}, 'file_proc_info', 'eeg_w') %save selected_segs results back to Segment files
+                end
+            end
+            %RL end
+
             % collect file information for output report if user selected
             if grp_proc_info_in.beapp_toggle_mods{'itpc','Module_Xls_Out_On'}
                 if ~report_initialized
@@ -62,12 +71,10 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
             end
             disp([strcat('File',num2str(curr_file))])            
             for curr_condition = 1:size(eeg_w,1)
-  
-                if ~isempty(grp_proc_info_in.win_select_n_trials)
-                    if size(eeg_w{curr_condition,1},3)>= grp_proc_info_in.win_select_n_trials
-                        
-                        % only keep n trials
-                        inds_to_select = sort(randperm(size(eeg_w{curr_condition,1},3),grp_proc_info_in.win_select_n_trials));
+                
+                if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edited this functionality
+                    if ~isempty(file_proc_info.selected_segs{curr_condition,1})
+                        inds_to_select = file_proc_info.selected_segs{curr_condition,1};
                         eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,inds_to_select);
                     else
                         % if not enough trials in this condition
@@ -77,7 +84,6 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
                         continue;
                     end
                 end
-            
                 
                 diary off;
 

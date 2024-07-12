@@ -88,6 +88,6 @@ else
     if isempty(file_proc_info.net_happe_additional_chans_lbls)
         chan_IDs = ({file_proc_info.net_vstruct(ica_10_20_chans2use{uniq_net_ind}).labels});
     else
-        chan_IDs = ({file_proc_info.net_vstruct(ica_10_20_chans2use{uniq_net_ind}).labels file_proc_info.net_happe_additional_chans_lbl{uniq_net_ind}});
+        chan_IDs = ({file_proc_info.net_vstruct(ica_10_20_chans2use{uniq_net_ind}).labels file_proc_info.net_happe_additional_chans_lbls{uniq_net_ind}});%RL edit
     end
 end

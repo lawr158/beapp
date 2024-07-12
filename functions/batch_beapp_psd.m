@@ -43,7 +43,7 @@ ndtyps =  grp_proc_info_in.beapp_xlsout_raw_on + grp_proc_info_in.beapp_xlsout_n
 ntransfs = grp_proc_info_in.beapp_xlsout_log_on+grp_proc_info_in.beapp_xlsout_log10_on+1;
 ntabs=nstats*ndtyps*ntransfs;
 
- for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
+for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
     
     cd(src_dir{1});
     
@@ -51,6 +51,15 @@ ntabs=nstats*ndtyps*ntransfs;
         load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
         tic;
         
+        %RL added:
+        if ~isempty(grp_proc_info_in.win_select_n_trials)
+            if ~isfield(file_proc_info,'selected_segs') %if selected segs wasn't set in Segment, set it now
+                file_proc_info.selected_segs = create_selected_segs(eeg_w,grp_proc_info_in.win_select_n_trials);
+                save(file_proc_info.beapp_fname{1}, 'file_proc_info', 'eeg_w') %save selected_segs results back to Segment files
+            end
+        end
+        %RL end
+
         % if event tagged data or pre-segmented data
         if grp_proc_info_in.src_data_type ==2 || grp_proc_info_in.src_format_typ ==3
             analysis_win_start = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_analysis_win_start .* file_proc_info.beapp_srate));
@@ -60,8 +69,6 @@ ntabs=nstats*ndtyps*ntransfs;
                 baseline_win_start = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_trial_baseline_win_start .* file_proc_info.beapp_srate));
                 baseline_win_end = file_proc_info.evt_seg_win_evt_ind + floor((grp_proc_info_in.evt_trial_baseline_win_end .* file_proc_info.beapp_srate))-1;
             end
-            % may be negative if analyzing window after event
-            file_proc_info.evt_seg_win_evt_ind = file_proc_info.evt_seg_win_evt_ind-(analysis_win_start-1);
         end
         
         % collect file information for output report if user selected
@@ -81,6 +88,19 @@ ntabs=nstats*ndtyps*ntransfs;
             
             if ~isempty(eeg_w{curr_condition,1})
                 
+                if ~isempty(grp_proc_info_in.win_select_n_trials) %RL edited this functionality
+                    if ~isempty(file_proc_info.selected_segs{curr_condition,1})
+                        inds_to_select = file_proc_info.selected_segs{curr_condition,1};
+                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,inds_to_select);
+                    else
+                        % if not enough trials in this condition
+                        disp(['BEAPP file: ' file_proc_info.beapp_fname{1} ' condition ' file_proc_info.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
+                        eeg_wfp{curr_condition,1} = [];
+                        % go to next condition in the for loop
+                        continue;
+                    end
+                end
+
                 % analyze desired part of segment for event related data
                 if grp_proc_info_in.src_data_type ==2
                     try
@@ -96,20 +116,7 @@ ntabs=nstats*ndtyps*ntransfs;
                     end
                 end
                 
-                if ~isempty(grp_proc_info_in.win_select_n_trials)
-                     
-                    if size(eeg_w{curr_condition,1},3)>= grp_proc_info_in.win_select_n_trials
-                        
-                        % only keep n trials
-                        inds_to_select = file_proc_info.selected_segs{curr_condition,1};
-                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,inds_to_select);
-                    else 
-                        disp(['BEAPP file: ' file_proc_info.beapp_fname{1} ' condition ' file_proc_info.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
-                        eeg_wfp{curr_condition,1} = [];
-                        continue;
-                    end
-                    
-                end
+                
                 
                 [eeg_wfp{curr_condition,1}, eeg_wf{curr_condition,1},f{curr_condition,1}] = calc_psd_of_win_typ(grp_proc_info_in.psd_win_typ,...
                     eeg_w{curr_condition,1},file_proc_info.beapp_srate,grp_proc_info_in.psd_pmtm_alpha,grp_proc_info_in.psd_nfft);

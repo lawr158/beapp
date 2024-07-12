@@ -78,7 +78,8 @@ file_proc_info.beapp_srate = file_proc_info.src_srate;
 file_proc_info.beapp_nchan = file_proc_info.src_nchan;
 file_proc_info.hist_run_tag = grp_proc_info_in.hist_run_tag;
 file_proc_info.hist_run_table = beapp_init_file_hist_table (grp_proc_info_in.beapp_toggle_mods.Properties.RowNames);
-file_proc_info.epoch_inds_to_process = grp_proc_info_in.epoch_inds_to_process;
+%%YB Modified 3/6/24
+file_proc_info.epoch_inds_to_process = cell2mat(grp_proc_info_in.epoch_inds_to_process_all(curr_file));
 file_proc_info.beapp_filt_max_freq = NaN;
 
 % different mff versions are in nano or microseconds

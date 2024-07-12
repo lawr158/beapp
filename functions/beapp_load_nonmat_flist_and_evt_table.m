@@ -44,8 +44,8 @@
 % this program. If not, see <http://www.gnu.org/licenses/>.
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function [src_fname_all,src_linenoise_all,src_offsets_in_ms_all,beapp_fname_all,src_net_typ_all]  = beapp_load_nonmat_flist_and_evt_table ...
-(src_dir,file_extension,event_tag_offsets,src_linenoise,event_file_info_table_loc, src_format_typ,run_per_file,file_idx)
+function [src_fname_all,src_linenoise_all,src_offsets_in_ms_all,beapp_fname_all,epoch_inds_to_process_all,src_net_typ_all]  = beapp_load_nonmat_flist_and_evt_table ...
+(src_dir,file_extension,event_tag_offsets,src_linenoise,event_file_info_table_loc, src_format_typ,run_per_file,file_idx,epoch)
 
 % get list of files of source type in source directory
 cd(src_dir{1});
@@ -58,7 +58,7 @@ end
 
 % pull in event offsets or individual linenoise freqs from table if needed 
 if ~isnumeric(event_tag_offsets) || ~isnumeric(src_linenoise) || src_format_typ == 4 || src_format_typ == 5
-   load(event_file_info_table_loc);
+    load(event_file_info_table_loc);
     if run_per_file 
         beapp_file_info_table =  beapp_file_info_table(file_idx,:);
     end
@@ -83,7 +83,19 @@ if ~isnumeric(event_tag_offsets) || ~isnumeric(src_linenoise) || src_format_typ 
     else
        src_linenoise_all = src_linenoise *ones(1,length(src_fname_all));
     end 
-   
+    %% YB Edits
+    %load epoch info if file specific, otherwise use group value for all
+    if strcmp(epoch,'input_table')
+        %EpochInd column is set as a cell to allow for different number of epochs by file
+        if iscell(beapp_file_info_table.Epoch)
+            epoch_inds_to_process_all = cell(beapp_file_info_table.EpochInd(ind_table));
+        end
+    elseif isempty(epoch)
+        epoch_inds_to_process_all = cell(1,length(src_fname_all));
+    else
+        epoch_inds_to_process_all = repmat({epoch},1,length(src_fname_all));
+    end
+    %%
     % EEGLAB, often will need to pull net name
     if src_format_typ == 4 || src_format_typ == 5
         % store group net types and sampling rates (from table)
@@ -92,7 +104,6 @@ if ~isnumeric(event_tag_offsets) || ~isnumeric(src_linenoise) || src_format_typ 
          src_net_typ_all = 'pulled directly from files';
     end
         
-    
 else
     % if no event/linenoise information table needed, use group value for
     % all files
@@ -100,6 +111,11 @@ else
     src_offsets_in_ms_all = event_tag_offsets * ones(1,length(src_fname_all));
     src_linenoise_all = src_linenoise * ones(1,length(src_fname_all));
     src_net_typ_all = 'pulled directly from files';
+    if isempty(epoch)
+        epoch_inds_to_process_all = cell(1,length(src_fname_all)); %YB changed
+    else
+        epoch_inds_to_process_all = repmat({epoch},1,length(src_fname_all)); %YB changed to put in cell format
+    end
 end
 
 beapp_fname_all=strrep(src_fname_all, file_extension, '.mat');

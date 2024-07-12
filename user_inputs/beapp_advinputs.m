@@ -175,8 +175,6 @@ grp_proc_info.pac_variable_hf_filt = 0; %Varies the high frequency filter width 
 grp_proc_info.pac_save_amp_dist = 0; %save the binned high frequency amplitude distribution
 
 %BYCYCLE
-grp_proc_info.bycyc_set_num_segs = 0;
-grp_proc_info.bycyc_num_segs = 6;
 grp_proc_info.bycycle_burstparams.amplitude_fraction_threshold = .3;
 grp_proc_info.bycycle_burstparams.amplitude_consistency_threshold = .4;
 grp_proc_info.bycycle_burstparams.period_consistency_threshold = .5;
