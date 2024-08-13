@@ -48,6 +48,9 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
         load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
         tic;
         if exist('eeg_w','var')
+
+            % check and create selected_segs if needed
+            file_proc_info = check_selected_segs(grp_proc_info_in.win_select_n_trials,file_proc_info,eeg_w);
             
             % collect file information for output report if user selected
             if grp_proc_info_in.beapp_toggle_mods{'itpc','Module_Xls_Out_On'}
@@ -62,13 +65,11 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
             end
             disp([strcat('File',num2str(curr_file))])            
             for curr_condition = 1:size(eeg_w,1)
-  
-                if ~isempty(grp_proc_info_in.win_select_n_trials)
-                    if size(eeg_w{curr_condition,1},3)>= grp_proc_info_in.win_select_n_trials
-                        
-                        % only keep n trials
-                        inds_to_select = sort(randperm(size(eeg_w{curr_condition,1},3),grp_proc_info_in.win_select_n_trials));
-                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,inds_to_select);
+                
+                if isfield(file_proc_info,selected_segs)
+                    if ~isempty(file_proc_info.selected_segs{curr_condition,1})
+                        % only use n trials
+                        eeg_w{curr_condition,1} = eeg_w{curr_condition,1}(:,:,file_proc_info.selected_segs{curr_condition,1});
                     else
                         % if not enough trials in this condition
                         disp(['BEAPP file: ' file_proc_info.beapp_fname{1} ' condition ' file_proc_info.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
@@ -77,7 +78,6 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
                         continue;
                     end
                 end
-            
                 
                 diary off;
 

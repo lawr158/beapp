@@ -58,13 +58,28 @@ else
              tic;
              % load eeg if module takes continuous input
             load(grp_proc_info_in.beapp_fname_all{curr_file},'eeg_w','file_proc_info');
+
+            % check and create selected_segs if needed
+            file_proc_info = check_selected_segs(grp_proc_info_in.win_select_n_trials,file_proc_info,eeg_w);
+
             if size(file_proc_info.beapp_indx{1,1},2) == 1 %flip beapp_indx if needed
                 file_proc_info.beapp_indx{1,1} = file_proc_info.beapp_indx{1,1}';
             end
             comodulogram_third_dim_headers = cell(1,size(file_proc_info.beapp_indx{1,1},2));
             for curr_condition = 1:size(eeg_w,1)
                 if ~isempty(eeg_w{curr_condition,1})
-                    curr_eeg = eeg_w{curr_condition,1}; 
+                    curr_eeg = eeg_w{curr_condition,1};
+
+                    if isfield(file_proc_info,selected_segs)
+                        if ~isempty(file_proc_info.selected_segs{curr_condition,1})
+                            % only use n trials
+                            curr_eeg = eeg_w{curr_condition,1}(:,:,file_proc_info.selected_segs{curr_condition,1});
+                        end
+                        segments_torun = file_proc_info.selected_segs{curr_condition,1};
+                    else
+                        segments_torun = (linspace(1,size(curr_eeg,3),size(curr_eeg,3)));
+                    end
+
                     if ~isempty(grp_proc_info_in.win_select_n_trials)
                         numsegs = grp_proc_info_in.win_select_n_trials;
                     else 
@@ -106,17 +121,17 @@ else
                             else
                                 curr_chan_amp_dist = NaN(grp_proc_info_in.pac_high_fq_res, grp_proc_info_in.pac_low_fq_res,18,numsegs);                       
                             end
-                            %randomly set segments to run, or run all of them
-                            if ~isempty(grp_proc_info_in.win_select_n_trials)
-                                if isempty(file_proc_info.selected_segs{1,1}) && size(eeg_w{1,1},3)>= grp_proc_info_in.win_select_n_trials %if previous module hasn't already set this
-                                    segments_torun = randsample(size(curr_eeg,3),grp_proc_info_in.win_select_n_trials);
-                                    file_proc_info.selected_segs = segments_torun;
-                                else
-                                    segments_torun = file_proc_info.selected_segs{1,1};
-                                end
-                            else
-                                segments_torun = (linspace(1,size(curr_eeg,3),size(curr_eeg,3)));
-                            end 
+%                             %randomly set segments to run, or run all of them
+%                             if ~isempty(grp_proc_info_in.win_select_n_trials)
+%                                 if isempty(file_proc_info.selected_segs{1,1}) && size(eeg_w{1,1},3)>= grp_proc_info_in.win_select_n_trials %if previous module hasn't already set this
+%                                     segments_torun = randsample(size(curr_eeg,3),grp_proc_info_in.win_select_n_trials);
+%                                     file_proc_info.selected_segs = segments_torun;
+%                                 else
+%                                     segments_torun = file_proc_info.selected_segs{1,1};
+%                                 end
+%                             else
+%                                 segments_torun = (linspace(1,size(curr_eeg,3),size(curr_eeg,3)));
+%                             end 
 
                             for seg = 1:size(segments_torun,2) 
                                 curr_seg = segments_torun(1,seg); 

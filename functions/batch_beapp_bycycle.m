@@ -48,23 +48,40 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
          % load eeg if module takes continuous input
          savefigs = 1;
          load(grp_proc_info_in.beapp_fname_all{curr_file});
+
+         % check and create selected_segs if needed
+         file_proc_info = check_selected_segs(grp_proc_info_in.win_select_n_trials,file_proc_info,eeg_w);
+
          if grp_proc_info_in.bycycle_save_reports && grp_proc_info_in.bycycle_gen_reports
             mkdir(strcat(erase(grp_proc_info_in.beapp_fname_all{curr_file},'.mat'),'_Image_outputs'));
          end
         for curr_condition = 1:size(eeg_w,1)
             if ~isempty(eeg_w{curr_condition,1})
                 curr_eeg = eeg_w{curr_condition,1};
-                if size(curr_eeg,3) > (grp_proc_info_in.bycyc_num_segs-1)
-                    %TODO: make segments the same as for pac 
-                    if ~isempty(grp_proc_info_in.win_select_n_trials)
+
+                if isfield(file_proc_info,selected_segs)
+                    if ~isempty(file_proc_info.selected_segs{curr_condition,1})
                         segments_torun = file_proc_info.selected_segs{curr_condition,1};
                     else
-                        if grp_proc_info_in.bycyc_set_num_segs==1
-                            segments_torun = randsample(size(curr_eeg,3),grp_proc_info_in.bycyc_num_segs);
-                        else
-                            segments_torun = [1:size(curr_eeg,3)];
-                        end
+                        disp(['BEAPP file: ' file_proc_info.beapp_fname{1} ' condition ' file_proc_info.grp_wide_possible_cond_names_at_segmentation{curr_condition} ' does not have the user selected number of segments. Skipping...']);
+                        results{curr_condition,1}=[];
+                        frequencies{curr_condition,1} = [];
+                        continue
                     end
+                else
+                    segments_torun = [1:size(curr_eeg,3)];
+                end
+%                 if size(curr_eeg,3) > (grp_proc_info_in.bycyc_num_segs-1)
+%                     %TODO: make segments the same as for pac 
+%                     if ~isempty(grp_proc_info_in.win_select_n_trials)
+%                         segments_torun = file_proc_info.selected_segs{curr_condition,1};
+%                     else
+%                         if grp_proc_info_in.bycyc_set_num_segs==1
+%                             segments_torun = randsample(size(curr_eeg,3),grp_proc_info_in.bycyc_num_segs);
+%                         else
+%                             segments_torun = [1:size(curr_eeg,3)];
+%                         end
+%                     end
                     frequency_bands = grp_proc_info_in.bycycle_freq_bands; 
                     for chan = 1:max_n_chans
                         if ismember(chan,file_proc_info.beapp_indx{1,1})
@@ -179,10 +196,10 @@ for curr_file=1:length(grp_proc_info_in.beapp_fname_all)
 %                             %results_table_nburst(:,chan) = squeeze(nanmean(nanmean(curr_chan_results_nburst,1),3));
                         end
                     end
-                else
-                    results{curr_condition,1}=[];
-                    frequencies{curr_condition,1} = [];
-                end
+%                 else
+%                     results{curr_condition,1}=[];
+%                     frequencies{curr_condition,1} = [];
+%                 end
            else
                 results{curr_condition,1}=[];
                 frequencies{curr_condition,1} = [];
